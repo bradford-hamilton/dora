@@ -13,26 +13,25 @@ func main() {
 }
 
 // Some test json
-const testJSON = `
-{
-  "items": {
-	"item": [
-	  {
-		"id": "0001",
-		"type": "donut",
-		"name": "Cake",
-		"ppu": 0.55,
-		"batters": {
-		  "batter": [{
-		     "id": "1001",
-			 "type": "Regular"
-		  }]
-		},
-		"topping": [{
-		  "id": "5001",
-		  "type": "None"
+const testJSON = `{
+	"items": {
+		"item": [{
+			"id": "0001",
+			"type": "donut",
+			"name": "Cake",
+			"ppu": 0.55,
+			"batters": {
+				"batter": [{
+					"id": "1001",
+					"type": "Regular",
+					"fun": "true"
+				}]
+			},
+			"topping": [{
+				"id": "5001",
+				"type": "null",
+				"fun": "false"
+			}]
 		}]
-	  }
-	]
-  }
+	}
 }`
