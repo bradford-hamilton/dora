@@ -4,10 +4,10 @@
     <img alt="Using go version 1.14" src="https://img.shields.io/badge/go-1.14-9cf.svg" />
   </a>
   <a href="https://goreportcard.com/report/github.com/bradford-hamilton/monkey-lang" target="_blank">
-    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/bradford-hamilton/parsejson" />
+    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/bradford-hamilton/parsejson/pkg" />
   </a>
-  <a href="https://godoc.org/github.com/bradford-hamilton/parsejson" target="_blank">
-    <img alt="godoc" src="https://godoc.org/github.com/bradford-hamilton/parsejson?status.svg" />
+  <a href="https://godoc.org/github.com/bradford-hamilton/parsejson/pkg" target="_blank">
+    <img alt="godoc" src="https://godoc.org/github.com/bradford-hamilton/parsejson/pkg?status.svg" />
   </a>
   <a href="#" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
@@ -19,7 +19,7 @@
 ## Install
 
 ```sh
-go get github.com/bradford-hamilton/parsejson
+go get github.com/bradford-hamilton/parsejson/pkg
 ```
 
 ## Run tests
@@ -38,7 +38,7 @@ go test ./...
 
 ## 🤝 Contributing
 
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/bradford-hamilton/parsejson/issues). 
+Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/bradford-hamilton/parsejson/pkg/issues). 
 
 ## Show your support
 

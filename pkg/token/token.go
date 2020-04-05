@@ -8,6 +8,10 @@ const (
 	// End of file
 	EOF = "EOF"
 
+	// Literals
+	Integer = "INTEGER"
+	String  = "STRING"
+
 	// The six structural tokens
 	LeftBrace    = "{"
 	RightBrace   = "}"

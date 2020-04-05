@@ -4,7 +4,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/bradford-hamilton/parsejson/lexer"
+	"github.com/bradford-hamilton/parsejson/pkg/lexer"
 )
 
 func main() {
