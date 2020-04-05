@@ -14,7 +14,7 @@ func TestNextToken(t *testing.T) {
 			"id": "0001",
 			"type": "donut",
 			"name": "Cake",
-			"ppu": 0.55,
+			"ppu": 55,
 			"batters": {
 				"batter": [{
 					"id": "1001",
@@ -22,11 +22,7 @@ func TestNextToken(t *testing.T) {
 					"fun": "true"
 				}]
 			},
-			"topping": [{
-				"id": "5001",
-				"type": "null",
-				"fun": "false"
-			}]
+			"names": ["catstack", "lampcat", "langlang"]
 		}]
 	}
 }`
@@ -38,6 +34,64 @@ func TestNextToken(t *testing.T) {
 	}{
 		{token.LeftBrace, "{", 0},
 		{token.String, "items", 1},
+		{token.Colon, ":", 1},
+		{token.LeftBrace, "{", 1},
+		{token.String, "item", 2},
+		{token.Colon, ":", 2},
+		{token.LeftBracket, "[", 2},
+		{token.LeftBrace, "{", 2},
+		{token.String, "id", 3},
+		{token.Colon, ":", 3},
+		{token.String, "0001", 3},
+		{token.Comma, ",", 3},
+		{token.String, "type", 4},
+		{token.Colon, ":", 4},
+		{token.String, "donut", 4},
+		{token.Comma, ",", 4},
+		{token.String, "name", 5},
+		{token.Colon, ":", 5},
+		{token.String, "Cake", 5},
+		{token.Comma, ",", 5},
+		{token.String, "ppu", 6},
+		{token.Colon, ":", 6},
+		{token.Integer, "55", 6},
+		{token.Comma, ",", 6},
+		{token.String, "batters", 7},
+		{token.Colon, ":", 7},
+		{token.LeftBrace, "{", 7},
+		{token.String, "batter", 8},
+		{token.Colon, ":", 8},
+		{token.LeftBracket, "[", 8},
+		{token.LeftBrace, "{", 8},
+		{token.String, "id", 9},
+		{token.Colon, ":", 9},
+		{token.String, "1001", 9},
+		{token.Comma, ",", 9},
+		{token.String, "type", 10},
+		{token.Colon, ":", 10},
+		{token.String, "Regular", 10},
+		{token.Comma, ",", 10},
+		{token.String, "fun", 11},
+		{token.Colon, ":", 11},
+		{token.True, "true", 11},
+		{token.RightBrace, "}", 12},
+		{token.RightBracket, "]", 12},
+		{token.RightBrace, "}", 13},
+		{token.Comma, ",", 13},
+		{token.String, "names", 14},
+		{token.Colon, ":", 14},
+		{token.LeftBracket, "[", 14},
+		{token.String, "catstack", 14},
+		{token.Comma, ",", 14},
+		{token.String, "lampcat", 14},
+		{token.Comma, ",", 14},
+		{token.String, "langlang", 14},
+		{token.RightBracket, "]", 14},
+		{token.RightBrace, "}", 15},
+		{token.RightBracket, "]", 15},
+		{token.RightBrace, "}", 16},
+		{token.RightBrace, "}", 17},
+		{token.EOF, "", 17},
 	}
 
 	l := New(input)

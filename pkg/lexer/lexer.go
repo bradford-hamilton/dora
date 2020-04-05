@@ -49,28 +49,33 @@ func (l *Lexer) NextToken() token.Token {
 		t = newToken(token.LeftBracket, l.line, l.char)
 	case ']':
 		t = newToken(token.RightBracket, l.line, l.char)
+	case ':':
+		t = newToken(token.Colon, l.line, l.char)
+	case ',':
+		t = newToken(token.Comma, l.line, l.char)
 	case '"':
 		t.Type = token.String
 		t.Literal = l.readString()
 		t.Line = l.line
+
+		if t.Literal == "true" {
+			t.Type = token.True
+		}
+		if t.Literal == "false" {
+			t.Type = token.False
+		}
 	case 0:
 		t.Literal = ""
 		t.Type = token.EOF
 		t.Line = l.line
 	default:
-		// if isLetter(l.char) {
-		// 	t.Literal = l.readIdentifier()
-		// 	t.Type = token.LookupIdentifier(t.Literal)
-		// 	t.Line = l.line
-		// 	return t
-		// } else if isInteger(l.char) {
-		// 	t.Literal = l.readInteger()
-		// 	t.Type = token.Integer
-		// 	t.Line = l.line
-		// 	return t
-		// } else {
-		// 	t = newToken(token.Illegal, l.line, l.char)
-		// }
+		if isInteger(l.char) {
+			t.Literal = l.readInteger()
+			t.Type = token.Integer
+			t.Line = l.line
+			return t
+		}
+		t = newToken(token.Illegal, l.line, l.char)
 	}
 
 	l.readChar()
@@ -107,4 +112,21 @@ func (l *Lexer) readString() string {
 		}
 	}
 	return string(l.input[position:l.position])
+}
+
+// readInteger sets a start position and reads through characters. When it
+// finds a char that isn't an integer, it stops consuming characters and
+// returns the string between the start and end positions.
+func (l *Lexer) readInteger() string {
+	position := l.position
+
+	for isInteger(l.char) {
+		l.readChar()
+	}
+
+	return string(l.input[position:l.position])
+}
+
+func isInteger(char rune) bool {
+	return '0' <= char && char <= '9'
 }
