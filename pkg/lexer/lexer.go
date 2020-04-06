@@ -1,3 +1,4 @@
+// Package lexer TODO
 package lexer
 
 import (
@@ -75,7 +76,8 @@ func (l *Lexer) NextToken() token.Token {
 			return t
 		} else if isInteger(l.char) {
 			// We know it has to be an integer or float
-			// TODO: implement support for floats here
+			// either implement support for floats or just a "number" should do for json
+			// would still need to add support for a single `.`
 			t.Literal = l.readInteger()
 			t.Type = token.Integer
 			t.Line = l.line
