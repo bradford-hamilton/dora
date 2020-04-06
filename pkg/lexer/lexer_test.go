@@ -26,7 +26,8 @@ func TestNextToken(t *testing.T) {
 		}]
 	},
 	"version": 0.1,
-	"number": 11.4
+	"number": 11.4,
+	"negativeNum": -5
 }`
 
 	tests := []struct {
@@ -56,7 +57,7 @@ func TestNextToken(t *testing.T) {
 		{token.Comma, ",", 5},
 		{token.String, "cpu", 6},
 		{token.Colon, ":", 6},
-		{token.Integer, "55", 6},
+		{token.Number, "55", 6},
 		{token.Comma, ",", 6},
 		{token.String, "batters", 7},
 		{token.Colon, ":", 7},
@@ -95,7 +96,18 @@ func TestNextToken(t *testing.T) {
 		{token.Comma, ",", 16},
 		{token.String, "version", 17},
 		{token.Colon, ":", 17},
-		// {token.EOF, "", 17},
+		{token.Number, "0.1", 17},
+		{token.Comma, ",", 17},
+		{token.String, "number", 18},
+		{token.Colon, ":", 18},
+		{token.Number, "11.4", 18},
+		{token.Comma, ",", 18},
+		{token.String, "negativeNum", 19},
+		{token.Colon, ":", 19},
+		{token.Minus, "-", 19},
+		{token.Number, "5", 19},
+		{token.RightBrace, "}", 20},
+		{token.EOF, "", 20},
 	}
 
 	l := New(input)

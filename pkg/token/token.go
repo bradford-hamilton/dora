@@ -14,9 +14,11 @@ const (
 	EOF = "EOF"
 
 	// Literals
-	String  = "STRING"
-	Integer = "INTEGER"
-	Float   = "FLOAT"
+	String = "STRING"
+	Number = "NUMBER"
+
+	// Operator
+	Minus = "-"
 
 	// The six structural tokens
 	LeftBrace    = "{"

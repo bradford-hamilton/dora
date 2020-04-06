@@ -58,6 +58,8 @@ func (l *Lexer) NextToken() token.Token {
 		t.Type = token.String
 		t.Literal = l.readString()
 		t.Line = l.line
+	case '-':
+		t = newToken(token.Minus, l.line, l.char)
 	case 0:
 		t.Literal = ""
 		t.Type = token.EOF
@@ -74,12 +76,9 @@ func (l *Lexer) NextToken() token.Token {
 			}
 			t.Type = tokenType
 			return t
-		} else if isInteger(l.char) {
-			// We know it has to be an integer or float
-			// either implement support for floats or just a "number" should do for json
-			// would still need to add support for a single `.`
-			t.Literal = l.readInteger()
-			t.Type = token.Integer
+		} else if isNumber(l.char) {
+			t.Literal = l.readNumber()
+			t.Type = token.Number
 			t.Line = l.line
 			return t
 		}
@@ -122,21 +121,21 @@ func (l *Lexer) readString() string {
 	return string(l.input[position:l.position])
 }
 
-// readInteger sets a start position and reads through characters. When it
-// finds a char that isn't an integer, it stops consuming characters and
+// readNumber sets a start position and reads through characters. When it
+// finds a char that isn't a number, it stops consuming characters and
 // returns the string between the start and end positions.
-func (l *Lexer) readInteger() string {
+func (l *Lexer) readNumber() string {
 	position := l.position
 
-	for isInteger(l.char) {
+	for isNumber(l.char) {
 		l.readChar()
 	}
 
 	return string(l.input[position:l.position])
 }
 
-func isInteger(char rune) bool {
-	return '0' <= char && char <= '9'
+func isNumber(char rune) bool {
+	return '0' <= char && char <= '9' || char == '.'
 }
 
 func isLetter(char rune) bool {
