@@ -57,19 +57,25 @@ func (l *Lexer) NextToken() token.Token {
 		t.Type = token.String
 		t.Literal = l.readString()
 		t.Line = l.line
-
-		if t.Literal == "true" {
-			t.Type = token.True
-		}
-		if t.Literal == "false" {
-			t.Type = token.False
-		}
 	case 0:
 		t.Literal = ""
 		t.Type = token.EOF
 		t.Line = l.line
 	default:
-		if isInteger(l.char) {
+		if isLetter(l.char) {
+			ident := l.readIdentifier()
+			t.Literal = ident
+			t.Line = l.line
+			tokenType, err := token.LookupIdentifier(ident)
+			if err != nil {
+				t.Type = token.Illegal
+				return t
+			}
+			t.Type = tokenType
+			return t
+		} else if isInteger(l.char) {
+			// We know it has to be an integer or float
+			// TODO: implement support for floats here
 			t.Literal = l.readInteger()
 			t.Type = token.Integer
 			t.Line = l.line
@@ -84,7 +90,7 @@ func (l *Lexer) NextToken() token.Token {
 }
 
 func (l *Lexer) skipWhitespace() {
-	for l.char == ' ' || l.char == '\t' || l.char == '\n' || l.char == '\r' || l.char == '\f' || l.char == '\b' {
+	for l.char == ' ' || l.char == '\t' || l.char == '\n' || l.char == '\r' {
 		if l.char == '\n' {
 			l.line++
 		}
@@ -129,4 +135,18 @@ func (l *Lexer) readInteger() string {
 
 func isInteger(char rune) bool {
 	return '0' <= char && char <= '9'
+}
+
+func isLetter(char rune) bool {
+	return 'a' <= char && char <= 'z'
+}
+
+func (l *Lexer) readIdentifier() string {
+	position := l.position
+
+	for isLetter(l.char) {
+		l.readChar()
+	}
+
+	return string(l.input[position:l.position])
 }

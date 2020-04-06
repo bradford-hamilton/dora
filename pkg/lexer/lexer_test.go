@@ -14,17 +14,19 @@ func TestNextToken(t *testing.T) {
 			"id": "0001",
 			"type": "donut",
 			"name": "Cake",
-			"ppu": 55,
+			"cpu": 55,
 			"batters": {
 				"batter": [{
-					"id": "1001",
-					"type": "Regular",
-					"fun": "true"
+					"id": false,
+					"name": null,
+					"fun": true
 				}]
 			},
 			"names": ["catstack", "lampcat", "langlang"]
 		}]
-	}
+	},
+	"version": 0.1,
+	"number": 11.4
 }`
 
 	tests := []struct {
@@ -52,7 +54,7 @@ func TestNextToken(t *testing.T) {
 		{token.Colon, ":", 5},
 		{token.String, "Cake", 5},
 		{token.Comma, ",", 5},
-		{token.String, "ppu", 6},
+		{token.String, "cpu", 6},
 		{token.Colon, ":", 6},
 		{token.Integer, "55", 6},
 		{token.Comma, ",", 6},
@@ -65,11 +67,11 @@ func TestNextToken(t *testing.T) {
 		{token.LeftBrace, "{", 8},
 		{token.String, "id", 9},
 		{token.Colon, ":", 9},
-		{token.String, "1001", 9},
+		{token.False, "false", 9},
 		{token.Comma, ",", 9},
-		{token.String, "type", 10},
+		{token.String, "name", 10},
 		{token.Colon, ":", 10},
-		{token.String, "Regular", 10},
+		{token.Null, "null", 10},
 		{token.Comma, ",", 10},
 		{token.String, "fun", 11},
 		{token.Colon, ":", 11},
@@ -90,8 +92,10 @@ func TestNextToken(t *testing.T) {
 		{token.RightBrace, "}", 15},
 		{token.RightBracket, "]", 15},
 		{token.RightBrace, "}", 16},
-		{token.RightBrace, "}", 17},
-		{token.EOF, "", 17},
+		{token.Comma, ",", 16},
+		{token.String, "version", 17},
+		{token.Colon, ":", 17},
+		// {token.EOF, "", 17},
 	}
 
 	l := New(input)

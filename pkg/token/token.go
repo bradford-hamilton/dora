@@ -1,5 +1,9 @@
 package token
 
+import (
+	"fmt"
+)
+
 // All the different tokens for supporting JSON
 const (
 	// Token/character we don't know about
@@ -9,8 +13,9 @@ const (
 	EOF = "EOF"
 
 	// Literals
-	Integer = "INTEGER"
 	String  = "STRING"
+	Integer = "INTEGER"
+	Float   = "FLOAT"
 
 	// The six structural tokens
 	LeftBrace    = "{"
@@ -20,10 +25,10 @@ const (
 	Comma        = ","
 	Colon        = ":"
 
-	// The three literal name tokens
-	True  = "true"
-	False = "false"
-	Null  = "null"
+	// Values
+	True  = "TRUE"
+	False = "FALSE"
+	Null  = "NULL"
 )
 
 // Type is a type alias for a string
@@ -34,6 +39,21 @@ type Token struct {
 	Type    Type
 	Literal string
 	Line    int
+}
+
+var validJSONIdentifiers = map[string]Type{
+	"true":  True,
+	"false": False,
+	"null":  Null,
+}
+
+// LookupIdentifier checks our validJSONIdentifiers map for the scanned identifier. If it finds one,
+// the identifier's token type is returned. If not found, an error is returned
+func LookupIdentifier(identifier string) (Type, error) {
+	if token, ok := validJSONIdentifiers[identifier]; ok {
+		return token, nil
+	}
+	return "", fmt.Errorf("Expected a valid JSON identifier. Found: %s", identifier)
 }
 
 // https://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
