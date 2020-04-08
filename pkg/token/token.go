@@ -17,9 +17,6 @@ const (
 	String = "STRING"
 	Number = "NUMBER"
 
-	// Operator
-	Minus = "-"
-
 	// The six structural tokens
 	LeftBrace    = "{"
 	RightBrace   = "}"

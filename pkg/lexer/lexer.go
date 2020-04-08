@@ -58,8 +58,6 @@ func (l *Lexer) NextToken() token.Token {
 		t.Type = token.String
 		t.Literal = l.readString()
 		t.Line = l.line
-	case '-':
-		t = newToken(token.Minus, l.line, l.char)
 	case 0:
 		t.Literal = ""
 		t.Type = token.EOF
@@ -135,7 +133,7 @@ func (l *Lexer) readNumber() string {
 }
 
 func isNumber(char rune) bool {
-	return '0' <= char && char <= '9' || char == '.'
+	return '0' <= char && char <= '9' || char == '.' || char == '-'
 }
 
 func isLetter(char rune) bool {

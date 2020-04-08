@@ -104,8 +104,7 @@ func TestNextToken(t *testing.T) {
 		{token.Comma, ",", 18},
 		{token.String, "negativeNum", 19},
 		{token.Colon, ":", 19},
-		{token.Minus, "-", 19},
-		{token.Number, "5", 19},
+		{token.Number, "-5", 19},
 		{token.RightBrace, "}", 20},
 		{token.EOF, "", 20},
 	}
