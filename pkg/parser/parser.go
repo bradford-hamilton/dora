@@ -36,6 +36,12 @@ func (p *Parser) ParseProgram() (*ast.RootNode, error) {
 		rootNode.Type = ast.ArrayRoot
 	}
 
+	// So here do I add to the if block above and set the rootNode.Array?
+	// Than I would otherwise set rootNode.Object?
+	// Then have two starting points parseObject and parseArray?
+	// Would parseObject just use parseArray within it?
+	// Something doesn't feel quite right... need a break
+
 	for !p.currentTokenTypeIs(token.EOF) {
 		// val := p.parseValue()
 		// if val != nil {
