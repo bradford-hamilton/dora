@@ -4,12 +4,16 @@ package main
 import (
 	"fmt"
 
-	"github.com/bradford-hamilton/parsejson/pkg/lexer"
+	"github.com/bradford-hamilton/parsejson/pkg/parsejson"
 )
 
 func main() {
-	l := lexer.New(testJSON)
-	fmt.Println(l)
+	pc, err := parsejson.NewFromString(testJSON)
+	if err != nil {
+		fmt.Printf("\nError creating client: %v\n", err)
+	}
+
+	fmt.Println(pc)
 }
 
 // Some test json
@@ -19,19 +23,18 @@ const testJSON = `{
 			"id": "0001",
 			"type": "donut",
 			"name": "Cake",
-			"ppu": 0.55,
+			"cpu": 55,
 			"batters": {
 				"batter": [{
-					"id": "1001",
-					"type": "Regular",
-					"fun": "true"
+					"id": false,
+					"name": null,
+					"fun": true
 				}]
 			},
-			"topping": [{
-				"id": "5001",
-				"type": "null",
-				"fun": "false"
-			}]
+			"names": ["catstack", "lampcat", "langlang"]
 		}]
-	}
+	},
+	"version": 0.1,
+	"number": 11.4,
+	"negativeNum": -5
 }`
