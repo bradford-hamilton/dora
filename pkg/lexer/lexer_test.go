@@ -27,7 +27,8 @@ func TestNextToken(t *testing.T) {
 	},
 	"version": 0.1,
 	"number": 11.4,
-	"negativeNum": -5
+	"negativeNum": -5,
+	"escapeString": "I'm some \"string\" thats escaped"
 }`
 
 	tests := []struct {
@@ -105,8 +106,12 @@ func TestNextToken(t *testing.T) {
 		{token.String, "negativeNum", 19},
 		{token.Colon, ":", 19},
 		{token.Number, "-5", 19},
-		{token.RightBrace, "}", 20},
-		{token.EOF, "", 20},
+		{token.Comma, ",", 19},
+		{token.String, "escapeString", 20},
+		{token.Colon, ":", 20},
+		{token.String, "I'm some \\\"string\\\" thats escaped", 20},
+		{token.RightBrace, "}", 21},
+		{token.EOF, "", 21},
 	}
 
 	l := New(input)

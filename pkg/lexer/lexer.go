@@ -111,8 +111,9 @@ func newToken(tokenType token.Type, line int, char ...rune) token.Token {
 func (l *Lexer) readString() string {
 	position := l.position + 1
 	for {
+		prevChar := l.char
 		l.readChar()
-		if l.char == '"' || l.char == 0 {
+		if (l.char == '"' && prevChar != '\\') || l.char == 0 {
 			break
 		}
 	}
