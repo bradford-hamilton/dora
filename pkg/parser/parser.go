@@ -4,6 +4,7 @@ package parser
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/bradford-hamilton/parsejson/pkg/ast"
 	"github.com/bradford-hamilton/parsejson/pkg/lexer"
@@ -83,31 +84,19 @@ func (p *Parser) parseValue() ast.Value {
 	switch p.currentToken.Type {
 	case token.LeftBrace:
 		return p.parseJSONObject()
-	// case token.LeftBracket:
-	// 	return p.parseJSONArray()
-	// case token.String:
-	// 	return p.parseJSONString()
-	// case token.Minus:
-	// 	return p.parseJSONumber()
-	// case token.Number:
-	// 	return p.parseJSONumber()
-	// case token.Illegal:
-	// 	return p.illegalToken()
+	case token.LeftBracket:
+		return p.parseJSONArray()
 	default:
-		return nil
+		return p.parseJSONLiteral()
 	}
 }
 
 func (p *Parser) parseJSONObject() ast.Value {
-	obj := ast.Object{
-		Type:     "Object",
-		Children: []ast.Property{},
-	}
-
+	obj := ast.Object{Type: "Object"}
 	objState := ast.ObjStart
 
 	// TODO: could be wrong, may need a subset of the tokens? We'll see
-	for p.currentTokenTypeIs(token.EOF) {
+	for !p.currentTokenTypeIs(token.EOF) {
 		switch objState {
 		case ast.ObjStart:
 			if p.expectPeekType(token.LeftBrace) {
@@ -117,26 +106,103 @@ func (p *Parser) parseJSONObject() ast.Value {
 			}
 		case ast.ObjOpen:
 			if p.peekTokenTypeIs(token.RightBrace) {
+				p.nextToken()
 				return obj
 			}
 			prop := p.parseProperty()
 			obj.Children = append(obj.Children, prop)
 			objState = ast.ObjProperty
+		case ast.ObjProperty:
+			if p.currentTokenTypeIs(token.RightBrace) {
+				p.nextToken()
+				return obj
+			} else if p.currentTokenTypeIs(token.Comma) {
+				objState = ast.ObjComma
+			} else {
+				// error
+			}
+		case ast.ObjComma:
+			prop := p.parseProperty()
+			if prop.Value != nil {
+				obj.Children = append(obj.Children, prop)
+				objState = ast.ObjProperty
+			}
 		}
 	}
 
 	return obj
 }
 
-func (p *Parser) parseProperty() ast.Property {
-	prop := ast.Property{
-		Type: "Property",
+func (p *Parser) parseJSONArray() ast.Value {
+	array := ast.Array{Type: "Array"}
+	arrayState := ast.ArrayStart
+
+	// TODO: could be wrong, may need a subset of the tokens? We'll see
+	for !p.currentTokenTypeIs(token.EOF) {
+		switch arrayState {
+		case ast.ArrayStart:
+			if p.expectPeekType(token.LeftBracket) {
+				arrayState = ast.ArrayOpen
+			}
+		case ast.ArrayOpen:
+			if p.currentTokenTypeIs(token.RightBracket) {
+				return array
+			}
+			p.nextToken()
+			val := p.parseValue()
+			array.Children = append(array.Children, val)
+			arrayState = ast.ArrayValue
+		case ast.ArrayValue:
+			if p.currentTokenTypeIs(token.RightBracket) {
+				p.nextToken()
+				return array
+			} else if p.currentTokenTypeIs(token.Comma) {
+				arrayState = ast.ArrayComma
+				p.nextToken()
+			}
+		case ast.ArrayComma:
+			val := p.parseValue()
+			array.Children = append(array.Children, val)
+			arrayState = ast.ArrayValue
+		}
 	}
+
+	return array
+}
+
+func (p *Parser) parseJSONLiteral() ast.Literal {
+	val := ast.Literal{Type: "Literal"}
+
+	switch p.currentToken.Type {
+	case token.String:
+		val.Value = p.parseString()
+		return val
+	case token.Number:
+		v, _ := strconv.Atoi(p.currentToken.Literal)
+		val.Value = v
+		return val
+	case token.True:
+		val.Value = true
+		return val
+	case token.False:
+		val.Value = false
+		return val
+	case token.Null:
+		val.Value = nil
+		return val
+	default:
+		val.Value = nil
+		return val
+	}
+}
+
+func (p *Parser) parseProperty() ast.Property {
+	prop := ast.Property{Type: "Property"}
 
 	propertyState := ast.PropertyStart
 
 	// TODO: could be wrong, may need a subset of the tokens? We'll see
-	for p.currentTokenTypeIs(token.EOF) {
+	for !p.currentTokenTypeIs(token.EOF) {
 		switch propertyState {
 		case ast.PropertyStart:
 			if p.expectPeekType(token.String) {
@@ -163,13 +229,9 @@ func (p *Parser) parseProperty() ast.Property {
 	return prop
 }
 
-func (p *Parser) parseString() ast.Value {
-	res := ""
-
-	for !p.currentTokenTypeIs(token.String) {
-
-	}
-
+func (p *Parser) parseString() string {
+	// TODO: all the tedius ecaping, etc still needs to be applied here
+	return p.currentToken.Literal
 }
 
 func (p *Parser) expectPeekType(t token.Type) bool {

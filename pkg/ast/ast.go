@@ -69,8 +69,9 @@ type propertyState int
 
 const (
 	ArrayStart arrayState = iota
-	ArrayKey
-	ArrayColon
+	ArrayOpen
+	ArrayValue
+	ArrayComma
 )
 
 type arrayState int
