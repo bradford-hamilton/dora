@@ -56,6 +56,26 @@ func LookupIdentifier(identifier string) (Type, error) {
 	return "", fmt.Errorf("Expected a valid JSON identifier. Found: %s", identifier)
 }
 
+var escapes = map[rune]int{
+	'"':  0, // Quotation mask
+	'\\': 1, // Reverse solidus
+	'/':  2, // Solidus
+	'b':  3, // Backspace
+	'f':  4, // Form feed
+	'n':  5, // New line
+	'r':  6, // Carriage return
+	't':  7, // Horizontal tab
+	'u':  8, // 4 hexadecimal digits
+}
+
+var escapeChars = map[string]string{
+	"b": "\b", // Backspace
+	"f": "\f", // Form feed
+	"n": "\n", // New line
+	"r": "\r", // Carriage return
+	"t": "\t", // Horizontal tab
+}
+
 // https://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 
 // [ U+005B left square bracket

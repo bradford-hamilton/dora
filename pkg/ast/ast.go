@@ -34,8 +34,6 @@ type Array struct {
 	Children []Value
 }
 
-// ============================================
-
 // Property TODO
 type Property struct {
 	Type  string
@@ -50,5 +48,50 @@ type Identifier struct {
 	Raw   string // "\"key1\""
 }
 
-// Value TODO
 type Value interface{}
+
+const (
+	ObjStart objectState = iota
+	ObjOpen
+	ObjProperty
+	ObjComma
+)
+
+type objectState int
+
+const (
+	PropertyStart propertyState = iota
+	PropertyKey
+	PropertyColon
+)
+
+type propertyState int
+
+const (
+	ArrayStart arrayState = iota
+	ArrayKey
+	ArrayColon
+)
+
+type arrayState int
+
+const (
+	StringStart stringState = iota
+	StringQuoteOrChar
+	Escape
+)
+
+type stringState int
+
+const (
+	NumberStart numberState = iota
+	NumberMinus
+	NumberZero
+	NumberDigit
+	NumberPoint
+	NumberDigitFraction
+	NumberExp
+	NumberExpDigitOrSign
+)
+
+type numberState int

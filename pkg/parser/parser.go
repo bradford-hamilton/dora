@@ -2,6 +2,9 @@
 package parser
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/bradford-hamilton/parsejson/pkg/ast"
 	"github.com/bradford-hamilton/parsejson/pkg/lexer"
 	"github.com/bradford-hamilton/parsejson/pkg/token"
@@ -32,8 +35,28 @@ func New(l *lexer.Lexer) *Parser {
 func (p *Parser) ParseProgram() (*ast.RootNode, error) {
 	var rootNode ast.RootNode
 
-	if p.currentTokenTypeIs(token.LeftBracket) {
+	if p.currentTokenTypeIs(token.LeftBrace) {
+		for !p.currentTokenTypeIs(token.EOF) {
+			val := p.parseValue()
+			if val != nil {
+				rootNode.Object = val.(*ast.Object)
+			}
+			p.nextToken()
+		}
+
+		return &rootNode, nil
+	} else if p.currentTokenTypeIs(token.LeftBracket) {
 		rootNode.Type = ast.ArrayRoot
+
+		for !p.currentTokenTypeIs(token.EOF) {
+			val := p.parseValue()
+			if val != nil {
+				rootNode.Array = val.(*ast.Array)
+			}
+			p.nextToken()
+		}
+
+		return &rootNode, nil
 	}
 
 	// So here do I add to the if block above and set the rootNode.Array?
@@ -42,15 +65,7 @@ func (p *Parser) ParseProgram() (*ast.RootNode, error) {
 	// Would parseObject just use parseArray within it?
 	// Something doesn't feel quite right... need a break
 
-	for !p.currentTokenTypeIs(token.EOF) {
-		// val := p.parseValue()
-		// if val != nil {
-		// 	rootNode.Values = append(rootNode.Values, val)
-		// }
-		p.nextToken()
-	}
-
-	return &rootNode, nil
+	return nil, errors.New("error")
 }
 
 // nextToken sets our current token to the peek token and the peek token to
@@ -65,9 +80,9 @@ func (p *Parser) currentTokenTypeIs(t token.Type) bool {
 }
 
 func (p *Parser) parseValue() ast.Value {
-	// switch p.currentToken.Type {
-	// case token.LeftBrace:
-	// 	return p.parseJSONObject()
+	switch p.currentToken.Type {
+	case token.LeftBrace:
+		return p.parseJSONObject()
 	// case token.LeftBracket:
 	// 	return p.parseJSONArray()
 	// case token.String:
@@ -78,9 +93,102 @@ func (p *Parser) parseValue() ast.Value {
 	// 	return p.parseJSONumber()
 	// case token.Illegal:
 	// 	return p.illegalToken()
-	// default:
-	// 	return p.parseJSONValue()
-	// }
+	default:
+		return nil
+	}
+}
 
-	return nil
+func (p *Parser) parseJSONObject() ast.Value {
+	obj := ast.Object{
+		Type:     "Object",
+		Children: []ast.Property{},
+	}
+
+	objState := ast.ObjStart
+
+	// TODO: could be wrong, may need a subset of the tokens? We'll see
+	for p.currentTokenTypeIs(token.EOF) {
+		switch objState {
+		case ast.ObjStart:
+			if p.expectPeekType(token.LeftBrace) {
+				objState = ast.ObjOpen
+			} else {
+				return nil
+			}
+		case ast.ObjOpen:
+			if p.peekTokenTypeIs(token.RightBrace) {
+				return obj
+			}
+			prop := p.parseProperty()
+			obj.Children = append(obj.Children, prop)
+			objState = ast.ObjProperty
+		}
+	}
+
+	return obj
+}
+
+func (p *Parser) parseProperty() ast.Property {
+	prop := ast.Property{
+		Type: "Property",
+	}
+
+	propertyState := ast.PropertyStart
+
+	// TODO: could be wrong, may need a subset of the tokens? We'll see
+	for p.currentTokenTypeIs(token.EOF) {
+		switch propertyState {
+		case ast.PropertyStart:
+			if p.expectPeekType(token.String) {
+				key := ast.Identifier{
+					Type:  "Identifier",
+					Value: p.parseString(),
+					Raw:   p.currentToken.Literal,
+				}
+				prop.Key = key
+				propertyState = ast.PropertyKey
+			}
+		case ast.PropertyKey:
+			if p.expectPeekType(token.Colon) {
+				propertyState = ast.PropertyColon
+			} else {
+				p.errors = append(p.errors, "TODO: error here")
+			}
+		case ast.PropertyColon:
+			val := p.parseValue()
+			prop.Value = val
+		}
+	}
+
+	return prop
+}
+
+func (p *Parser) parseString() ast.Value {
+	res := ""
+
+	for !p.currentTokenTypeIs(token.String) {
+
+	}
+
+}
+
+func (p *Parser) expectPeekType(t token.Type) bool {
+	if p.peekTokenTypeIs(t) {
+		p.nextToken()
+		return true
+	}
+
+	p.peekError(t)
+	return false
+}
+
+func (p *Parser) peekTokenTypeIs(t token.Type) bool {
+	return p.peekToken.Type == t
+}
+
+func (p *Parser) peekError(t token.Type) {
+	msg := fmt.Sprintf(
+		"Line: %d: Expected next token to be %s, got: %s instead", p.currentToken.Line, t, p.peekToken.Type,
+	)
+	p.errors = append(p.errors, msg)
 }
