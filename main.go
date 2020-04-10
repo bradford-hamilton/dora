@@ -16,25 +16,28 @@ func main() {
 	fmt.Println(pc)
 }
 
+const testJSON = `{ "key0": [], "key1": "simplestringvalue" }`
+
+// const testJSON = `{
+// 	"thing": [{
+// 		"insidekey": "value"
+// 	}]
+// }`
+
+// const testJSON = `{
+// 	"thing": [{
+// 		"insidekey": "value",
+// 		"insidekey2": "value"
+// 	}]
+// }`
+
 // Some test json
-const testJSON = `{
-	"items": {
-		"item": [{
-			"id": "0001",
-			"type": "donut",
-			"name": "Cake",
-			"cpu": 55,
-			"batters": {
-				"batter": [{
-					"id": false,
-					"name": null,
-					"fun": true
-				}]
-			},
-			"names": ["catstack", "lampcat", "langlang"]
-		}]
-	},
-	"version": 0.1,
-	"number": 11.4,
-	"negativeNum": -5
-}`
+// const testJSON = `{
+// 	"id": "0001",
+// 	"names": ["catstack"]
+// }`
+
+// const testJSON = `{
+// 	"id": "0001",
+// 	"batters": { "ling": "lang" }
+// }`

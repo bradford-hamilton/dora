@@ -37,24 +37,17 @@ func (p *Parser) ParseProgram() (*ast.RootNode, error) {
 	var rootNode ast.RootNode
 
 	if p.currentTokenTypeIs(token.LeftBrace) {
-		for !p.currentTokenTypeIs(token.EOF) {
-			val := p.parseValue()
-			if val != nil {
-				rootNode.Object = val.(*ast.Object)
-			}
-			p.nextToken()
+		val := p.parseJSONObject()
+		if val != nil {
+			rootNode.Object = &val
 		}
 
 		return &rootNode, nil
 	} else if p.currentTokenTypeIs(token.LeftBracket) {
 		rootNode.Type = ast.ArrayRoot
-
-		for !p.currentTokenTypeIs(token.EOF) {
-			val := p.parseValue()
-			if val != nil {
-				rootNode.Array = val.(*ast.Array)
-			}
-			p.nextToken()
+		val := p.parseJSONArray()
+		if val != nil {
+			rootNode.Array = &val
 		}
 
 		return &rootNode, nil
@@ -99,9 +92,11 @@ func (p *Parser) parseJSONObject() ast.Value {
 	for !p.currentTokenTypeIs(token.EOF) {
 		switch objState {
 		case ast.ObjStart:
-			if p.expectPeekType(token.LeftBrace) {
+			if p.currentTokenTypeIs(token.LeftBrace) {
 				objState = ast.ObjOpen
+				p.nextToken()
 			} else {
+				// add to errors
 				return nil
 			}
 		case ast.ObjOpen:
@@ -112,14 +107,21 @@ func (p *Parser) parseJSONObject() ast.Value {
 			prop := p.parseProperty()
 			obj.Children = append(obj.Children, prop)
 			objState = ast.ObjProperty
+
+			// if !p.currentTokenTypeIs(token.Comma) {
+			// 	p.nextToken()
+			// }
+
 		case ast.ObjProperty:
 			if p.currentTokenTypeIs(token.RightBrace) {
 				p.nextToken()
 				return obj
 			} else if p.currentTokenTypeIs(token.Comma) {
 				objState = ast.ObjComma
+				p.nextToken()
 			} else {
 				// error
+				fmt.Println("err")
 			}
 		case ast.ObjComma:
 			prop := p.parseProperty()
@@ -127,6 +129,7 @@ func (p *Parser) parseJSONObject() ast.Value {
 				obj.Children = append(obj.Children, prop)
 				objState = ast.ObjProperty
 			}
+			// p.nextToken()
 		}
 	}
 
@@ -141,17 +144,24 @@ func (p *Parser) parseJSONArray() ast.Value {
 	for !p.currentTokenTypeIs(token.EOF) {
 		switch arrayState {
 		case ast.ArrayStart:
-			if p.expectPeekType(token.LeftBracket) {
+			if p.currentTokenTypeIs(token.LeftBracket) {
 				arrayState = ast.ArrayOpen
+				p.nextToken()
 			}
 		case ast.ArrayOpen:
 			if p.currentTokenTypeIs(token.RightBracket) {
+				p.nextToken()
 				return array
 			}
-			p.nextToken()
 			val := p.parseValue()
 			array.Children = append(array.Children, val)
 			arrayState = ast.ArrayValue
+
+			// NOTE: this is what was helping in some scenarios but not others
+			// if p.peekTokenTypeIs(token.RightBracket) {
+			// 	p.nextToken()
+			// }
+
 		case ast.ArrayValue:
 			if p.currentTokenTypeIs(token.RightBracket) {
 				p.nextToken()
@@ -164,6 +174,7 @@ func (p *Parser) parseJSONArray() ast.Value {
 			val := p.parseValue()
 			array.Children = append(array.Children, val)
 			arrayState = ast.ArrayValue
+			// p.nextToken()
 		}
 	}
 
@@ -198,14 +209,13 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 
 func (p *Parser) parseProperty() ast.Property {
 	prop := ast.Property{Type: "Property"}
-
 	propertyState := ast.PropertyStart
 
 	// TODO: could be wrong, may need a subset of the tokens? We'll see
 	for !p.currentTokenTypeIs(token.EOF) {
 		switch propertyState {
 		case ast.PropertyStart:
-			if p.expectPeekType(token.String) {
+			if p.currentTokenTypeIs(token.String) {
 				key := ast.Identifier{
 					Type:  "Identifier",
 					Value: p.parseString(),
@@ -213,16 +223,22 @@ func (p *Parser) parseProperty() ast.Property {
 				}
 				prop.Key = key
 				propertyState = ast.PropertyKey
+				p.nextToken()
+			} else {
+				// error
 			}
 		case ast.PropertyKey:
-			if p.expectPeekType(token.Colon) {
+			if p.currentTokenTypeIs(token.Colon) {
 				propertyState = ast.PropertyColon
+				p.nextToken()
 			} else {
 				p.errors = append(p.errors, "TODO: error here")
 			}
 		case ast.PropertyColon:
 			val := p.parseValue()
 			prop.Value = val
+			p.nextToken()
+			return prop
 		}
 	}
 

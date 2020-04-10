@@ -11,8 +11,8 @@ type rootNodeType int
 
 // RootNode TODO
 type RootNode struct {
-	Object *Object
-	Array  *Array
+	Object *Value
+	Array  *Value
 	Type   rootNodeType
 }
 
