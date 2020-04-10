@@ -33,7 +33,7 @@ func New(l *lexer.Lexer) *Parser {
 
 // ParseProgram parses tokens and creates an AST. It returns the RootNode
 // which holds a slice of Values (and in turn, the rest of the tree)
-func (p *Parser) ParseProgram() (*ast.RootNode, error) {
+func (p *Parser) ParseProgram() (ast.RootNode, error) {
 	var rootNode ast.RootNode
 
 	if p.currentTokenTypeIs(token.LeftBrace) {
@@ -41,25 +41,17 @@ func (p *Parser) ParseProgram() (*ast.RootNode, error) {
 		if val != nil {
 			rootNode.Object = &val
 		}
-
-		return &rootNode, nil
+		return rootNode, nil
 	} else if p.currentTokenTypeIs(token.LeftBracket) {
 		rootNode.Type = ast.ArrayRoot
 		val := p.parseJSONArray()
 		if val != nil {
 			rootNode.Array = &val
 		}
-
-		return &rootNode, nil
+		return rootNode, nil
 	}
 
-	// So here do I add to the if block above and set the rootNode.Array?
-	// Than I would otherwise set rootNode.Object?
-	// Then have two starting points parseObject and parseArray?
-	// Would parseObject just use parseArray within it?
-	// Something doesn't feel quite right... need a break
-
-	return nil, errors.New("error")
+	return ast.RootNode{}, errors.New("error")
 }
 
 // nextToken sets our current token to the peek token and the peek token to
@@ -73,6 +65,8 @@ func (p *Parser) currentTokenTypeIs(t token.Type) bool {
 	return p.currentToken.Type == t
 }
 
+// parseValue is our dynamic entrypoint to parsing JSON values. All scenarios for
+// this parser fall under these 3 actions.
 func (p *Parser) parseValue() ast.Value {
 	switch p.currentToken.Type {
 	case token.LeftBrace:
@@ -84,11 +78,11 @@ func (p *Parser) parseValue() ast.Value {
 	}
 }
 
+// parseJSONObject is called when an open left brace `{` is found
 func (p *Parser) parseJSONObject() ast.Value {
 	obj := ast.Object{Type: "Object"}
 	objState := ast.ObjStart
 
-	// TODO: could be wrong, may need a subset of the tokens? We'll see
 	for !p.currentTokenTypeIs(token.EOF) {
 		switch objState {
 		case ast.ObjStart:
@@ -96,22 +90,20 @@ func (p *Parser) parseJSONObject() ast.Value {
 				objState = ast.ObjOpen
 				p.nextToken()
 			} else {
-				// add to errors
+				p.parseError(fmt.Sprintf(
+					"Error parsing JSON object Expected `{` token, got: %s",
+					p.currentToken.Literal,
+				))
 				return nil
 			}
 		case ast.ObjOpen:
-			if p.peekTokenTypeIs(token.RightBrace) {
+			if p.currentTokenTypeIs(token.RightBrace) {
 				p.nextToken()
 				return obj
 			}
 			prop := p.parseProperty()
 			obj.Children = append(obj.Children, prop)
 			objState = ast.ObjProperty
-
-			// if !p.currentTokenTypeIs(token.Comma) {
-			// 	p.nextToken()
-			// }
-
 		case ast.ObjProperty:
 			if p.currentTokenTypeIs(token.RightBrace) {
 				p.nextToken()
@@ -120,8 +112,11 @@ func (p *Parser) parseJSONObject() ast.Value {
 				objState = ast.ObjComma
 				p.nextToken()
 			} else {
-				// error
-				fmt.Println("err")
+				p.parseError(fmt.Sprintf(
+					"Error parsing property. Expected RightBrace or Comma token, got: %s",
+					p.currentToken.Literal,
+				))
+				return nil
 			}
 		case ast.ObjComma:
 			prop := p.parseProperty()
@@ -129,18 +124,17 @@ func (p *Parser) parseJSONObject() ast.Value {
 				obj.Children = append(obj.Children, prop)
 				objState = ast.ObjProperty
 			}
-			// p.nextToken()
 		}
 	}
 
 	return obj
 }
 
+// parseJSONArray is called when an open left bracket `[` is found
 func (p *Parser) parseJSONArray() ast.Value {
 	array := ast.Array{Type: "Array"}
 	arrayState := ast.ArrayStart
 
-	// TODO: could be wrong, may need a subset of the tokens? We'll see
 	for !p.currentTokenTypeIs(token.EOF) {
 		switch arrayState {
 		case ast.ArrayStart:
@@ -156,12 +150,9 @@ func (p *Parser) parseJSONArray() ast.Value {
 			val := p.parseValue()
 			array.Children = append(array.Children, val)
 			arrayState = ast.ArrayValue
-
-			// NOTE: this is what was helping in some scenarios but not others
-			// if p.peekTokenTypeIs(token.RightBracket) {
-			// 	p.nextToken()
-			// }
-
+			if p.peekTokenTypeIs(token.RightBracket) {
+				p.nextToken()
+			}
 		case ast.ArrayValue:
 			if p.currentTokenTypeIs(token.RightBracket) {
 				p.nextToken()
@@ -174,7 +165,6 @@ func (p *Parser) parseJSONArray() ast.Value {
 			val := p.parseValue()
 			array.Children = append(array.Children, val)
 			arrayState = ast.ArrayValue
-			// p.nextToken()
 		}
 	}
 
@@ -183,6 +173,9 @@ func (p *Parser) parseJSONArray() ast.Value {
 
 func (p *Parser) parseJSONLiteral() ast.Literal {
 	val := ast.Literal{Type: "Literal"}
+
+	// Regardless of what the current token type is - after it's been assigned, we must consume the token
+	defer p.nextToken()
 
 	switch p.currentToken.Type {
 	case token.String:
@@ -211,7 +204,6 @@ func (p *Parser) parseProperty() ast.Property {
 	prop := ast.Property{Type: "Property"}
 	propertyState := ast.PropertyStart
 
-	// TODO: could be wrong, may need a subset of the tokens? We'll see
 	for !p.currentTokenTypeIs(token.EOF) {
 		switch propertyState {
 		case ast.PropertyStart:
@@ -225,19 +217,24 @@ func (p *Parser) parseProperty() ast.Property {
 				propertyState = ast.PropertyKey
 				p.nextToken()
 			} else {
-				// error
+				p.parseError(fmt.Sprintf(
+					"Error parsing property start. Expected String token, got: %s",
+					p.currentToken.Literal,
+				))
 			}
 		case ast.PropertyKey:
 			if p.currentTokenTypeIs(token.Colon) {
 				propertyState = ast.PropertyColon
 				p.nextToken()
 			} else {
-				p.errors = append(p.errors, "TODO: error here")
+				p.parseError(fmt.Sprintf(
+					"Error parsing property. Expected Colon token, got: %s",
+					p.currentToken.Literal,
+				))
 			}
 		case ast.PropertyColon:
 			val := p.parseValue()
 			prop.Value = val
-			p.nextToken()
 			return prop
 		}
 	}
@@ -255,7 +252,6 @@ func (p *Parser) expectPeekType(t token.Type) bool {
 		p.nextToken()
 		return true
 	}
-
 	p.peekError(t)
 	return false
 }
@@ -266,7 +262,14 @@ func (p *Parser) peekTokenTypeIs(t token.Type) bool {
 
 func (p *Parser) peekError(t token.Type) {
 	msg := fmt.Sprintf(
-		"Line: %d: Expected next token to be %s, got: %s instead", p.currentToken.Line, t, p.peekToken.Type,
+		"Line: %d: Expected next token to be %s, got: %s instead",
+		p.currentToken.Line,
+		t,
+		p.peekToken.Type,
 	)
+	p.errors = append(p.errors, msg)
+}
+
+func (p *Parser) parseError(msg string) {
 	p.errors = append(p.errors, msg)
 }

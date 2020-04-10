@@ -20,7 +20,7 @@ func NewFromBytes(bytes []byte) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{program}, nil
+	return &Client{&program}, nil
 }
 
 // NewFromString TODO
@@ -31,7 +31,7 @@ func NewFromString(jsonStr string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{program}, nil
+	return &Client{&program}, nil
 }
 
 // Start thinking about what methods to add to the client to interact with the program

@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	pc, err := parsejson.NewFromString(testJSON)
+	pc, err := parsejson.NewFromString(testJSONObject)
 	if err != nil {
 		fmt.Printf("\nError creating client: %v\n", err)
 	}
@@ -16,28 +16,22 @@ func main() {
 	fmt.Println(pc)
 }
 
-const testJSON = `{ "key0": [], "key1": "simplestringvalue" }`
+const testJSONArray = `[
+	"item1",
+	"item2",
+	{"item3": "item3value", "item4": {"innerkey": "innervalue"}},
+	["item1", ["array"]]
+]`
 
-// const testJSON = `{
-// 	"thing": [{
-// 		"insidekey": "value"
-// 	}]
-// }`
-
-// const testJSON = `{
-// 	"thing": [{
-// 		"insidekey": "value",
-// 		"insidekey2": "value"
-// 	}]
-// }`
-
-// Some test json
-// const testJSON = `{
-// 	"id": "0001",
-// 	"names": ["catstack"]
-// }`
-
-// const testJSON = `{
-// 	"id": "0001",
-// 	"batters": { "ling": "lang" }
-// }`
+const testJSONObject = `{
+	"item1": ["aryitem1", "aryitem2", {"some": "object"}],
+	"item2": "simplestringvalue",
+	"item3": {
+		"item4": {
+			"item5": {
+				"item6": ["thing1", 2],
+				"item7": {"reallyinnerobjkey": {"is": "anobject"}}
+			}
+		}
+	}
+}`
