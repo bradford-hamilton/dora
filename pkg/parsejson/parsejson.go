@@ -12,7 +12,9 @@ type Client struct {
 	program *ast.RootNode
 }
 
-// NewFromBytes TODO
+// NewFromBytes takes a slice of bytes, creates a lexer, creates a parser from the lexer,
+// and parses the program into an AST. Methods on the Client give access to private
+// AST held inside
 func NewFromBytes(bytes []byte) (*Client, error) {
 	l := lexer.New(string(bytes))
 	p := parser.New(l)
@@ -23,7 +25,9 @@ func NewFromBytes(bytes []byte) (*Client, error) {
 	return &Client{&program}, nil
 }
 
-// NewFromString TODO
+// NewFromString takes a string, creates a lexer, creates a parser from the lexer,
+// and parses the program into an AST. Methods on the Client give access to private
+// AST held inside
 func NewFromString(jsonStr string) (*Client, error) {
 	l := lexer.New(jsonStr)
 	p := parser.New(l)

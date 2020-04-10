@@ -39,14 +39,14 @@ func (p *Parser) ParseProgram() (ast.RootNode, error) {
 	if p.currentTokenTypeIs(token.LeftBrace) {
 		val := p.parseJSONObject()
 		if val != nil {
-			rootNode.Object = &val
+			rootNode.RootValue = &val
 		}
 		return rootNode, nil
 	} else if p.currentTokenTypeIs(token.LeftBracket) {
 		rootNode.Type = ast.ArrayRoot
 		val := p.parseJSONArray()
 		if val != nil {
-			rootNode.Array = &val
+			rootNode.RootValue = &val
 		}
 		return rootNode, nil
 	}
@@ -272,4 +272,9 @@ func (p *Parser) peekError(t token.Type) {
 
 func (p *Parser) parseError(msg string) {
 	p.errors = append(p.errors, msg)
+}
+
+// Errors is simply a helper function that returns the parser's errors
+func (p *Parser) Errors() []string {
+	return p.errors
 }
