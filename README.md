@@ -1,3 +1,10 @@
+<div align="center">
+  <img
+    alt="Dora backpack with JSON"
+    src="./dora.png"
+    height="300px"
+  />
+</div>
 <h1 align="center">Welcome to Dora the JSON explorer 👋</h1>
 <p align="center">
   <a href="https://golang.org/dl" target="_blank">
@@ -24,7 +31,7 @@ go get github.com/bradford-hamilton/dora/pkg
 
 ## Run tests
 
-```sh
+```shs
 go test ./...
 ```
 
