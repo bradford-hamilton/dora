@@ -21,12 +21,12 @@
   </a>
 </p>
 
-> Currently Dora lexes/scans and parses JSON into an AST. Next step is adding methods to the dora client so that JSON can be fetched, explored, etc. Still open to ideas in general as this project hasn't quite found it's nitch
+> Currently dora lexes/scans and parses JSON into an AST. Next step is adding methods to the dora client so that JSON can be fetched, explored, etc. Still open to ideas in general as this project hasn't quite found it's nitch
 
 ## Install
 
 ```sh
-go get github.com/bradford-hamilton/dora/pkg
+go get github.com/bradford-hamilton/dora/pkg/dora
 ```
 
 ## Run tests
