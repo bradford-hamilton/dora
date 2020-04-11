@@ -8,12 +8,17 @@ import (
 )
 
 func main() {
-	client, err := dora.NewFromString(testJSONObject)
+	c, err := dora.NewFromString(testJSONObject)
 	if err != nil {
 		fmt.Printf("\nError creating client: %v\n", err)
 	}
 
-	fmt.Println(client)
+	res, err := c.GetByFullPath("$.item1[0]")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(res)
 }
 
 const testJSONArray = `[

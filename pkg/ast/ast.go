@@ -4,17 +4,17 @@ package ast
 // These are the available root node types. In JSON it will either be an
 // object or an array at the base.
 const (
-	ObjectRoot rootNodeType = iota
+	ObjectRoot RootNodeType = iota
 	ArrayRoot
 )
 
-type rootNodeType int
+type RootNodeType int
 
 // RootNode is what starts every parsed AST. There is a `Type` field so that
 // you can ask which root node type starts the tree. From there you can access the
 type RootNode struct {
 	RootValue *Value
-	Type      rootNodeType
+	Type      RootNodeType
 }
 
 // Object represents a JSON object. It holds a slice of Property as its children.
