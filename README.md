@@ -1,4 +1,4 @@
-<h1 align="center">Welcome to dora 👋</h1>
+<h1 align="center">Welcome to Dora the JSON explorer 👋</h1>
 <p align="center">
   <a href="https://golang.org/dl" target="_blank">
     <img alt="Using go version 1.14" src="https://img.shields.io/badge/go-1.14-9cf.svg" />
@@ -14,7 +14,7 @@
   </a>
 </p>
 
-> Not sure what this is yet... I really wanted to play around with building a JSON parser of some sort and see how fast I could make it. One thing I do know for sure is definitely don't try to use it anytime soon, it could be a throw away project depending on how much time I have.
+> Currently Dora lexes/scans and parses JSON into an AST. Next step is adding methods to the dora client so that JSON can be fetched, explored, etc. Still open to ideas in general as this project hasn't quite found it's nitch
 
 ## Install
 
@@ -45,4 +45,4 @@ Contributions, issues and feature requests are welcome!<br />Feel free to check 
 Give a ⭐️ if this project helped you!
 
 ***
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
+##### _This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
