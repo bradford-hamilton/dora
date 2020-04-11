@@ -26,7 +26,7 @@
 ## Install
 
 ```sh
-go get github.com/bradford-hamilton/dora/pkg
+go get github.com/bradford-hamilton/dora/pkg/dora
 ```
 
 ## Run tests
