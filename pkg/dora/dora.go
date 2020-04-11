@@ -1,10 +1,10 @@
-// Package parsejson TODO: package docs
-package parsejson
+// Package dora TODO: package docs
+package dora
 
 import (
-	"github.com/bradford-hamilton/parsejson/pkg/ast"
-	"github.com/bradford-hamilton/parsejson/pkg/lexer"
-	"github.com/bradford-hamilton/parsejson/pkg/parser"
+	"github.com/bradford-hamilton/dora/pkg/ast"
+	"github.com/bradford-hamilton/dora/pkg/lexer"
+	"github.com/bradford-hamilton/dora/pkg/parser"
 )
 
 // Client TODO

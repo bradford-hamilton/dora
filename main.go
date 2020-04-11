@@ -4,16 +4,16 @@ package main
 import (
 	"fmt"
 
-	"github.com/bradford-hamilton/parsejson/pkg/parsejson"
+	"github.com/bradford-hamilton/dora/pkg/dora"
 )
 
 func main() {
-	pc, err := parsejson.NewFromString(testJSONObject)
+	client, err := dora.NewFromString(testJSONObject)
 	if err != nil {
 		fmt.Printf("\nError creating client: %v\n", err)
 	}
 
-	fmt.Println(pc)
+	fmt.Println(client)
 }
 
 const testJSONArray = `[

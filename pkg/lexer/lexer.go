@@ -2,7 +2,7 @@
 package lexer
 
 import (
-	"github.com/bradford-hamilton/parsejson/pkg/token"
+	"github.com/bradford-hamilton/dora/pkg/token"
 )
 
 // Lexer performs lexical analysis/scanning of the JSON

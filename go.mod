@@ -1,3 +1,3 @@
-module github.com/bradford-hamilton/parsejson
+module github.com/bradford-hamilton/dora
 
 go 1.14

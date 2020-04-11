@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/bradford-hamilton/parsejson/pkg/ast"
-	"github.com/bradford-hamilton/parsejson/pkg/lexer"
-	"github.com/bradford-hamilton/parsejson/pkg/token"
+	"github.com/bradford-hamilton/dora/pkg/ast"
+	"github.com/bradford-hamilton/dora/pkg/lexer"
+	"github.com/bradford-hamilton/dora/pkg/token"
 )
 
 // Parser holds a Lexer, its errors, the currentToken, peekToken (next token)

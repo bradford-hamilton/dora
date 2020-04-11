@@ -1,13 +1,13 @@
-<h1 align="center">Welcome to parsejson 👋</h1>
+<h1 align="center">Welcome to dora 👋</h1>
 <p align="center">
   <a href="https://golang.org/dl" target="_blank">
     <img alt="Using go version 1.14" src="https://img.shields.io/badge/go-1.14-9cf.svg" />
   </a>
-  <a href="https://goreportcard.com/report/github.com/bradford-hamilton/parsejson" target="_blank">
-    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/bradford-hamilton/parsejson/pkg" />
+  <a href="https://goreportcard.com/report/github.com/bradford-hamilton/dora" target="_blank">
+    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/bradford-hamilton/dora/pkg" />
   </a>
-  <a href="https://godoc.org/github.com/bradford-hamilton/parsejson/pkg" target="_blank">
-    <img alt="godoc" src="https://godoc.org/github.com/bradford-hamilton/parsejson/pkg?status.svg" />
+  <a href="https://godoc.org/github.com/bradford-hamilton/dora/pkg" target="_blank">
+    <img alt="godoc" src="https://godoc.org/github.com/bradford-hamilton/dora/pkg?status.svg" />
   </a>
   <a href="#" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
@@ -19,7 +19,7 @@
 ## Install
 
 ```sh
-go get github.com/bradford-hamilton/parsejson/pkg
+go get github.com/bradford-hamilton/dora/pkg
 ```
 
 ## Run tests
@@ -38,7 +38,7 @@ go test ./...
 
 ## 🤝 Contributing
 
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/bradford-hamilton/parsejson/pkg/issues). 
+Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/bradford-hamilton/dora/pkg/issues). 
 
 ## Show your support
 
