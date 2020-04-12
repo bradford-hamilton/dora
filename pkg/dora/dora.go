@@ -38,8 +38,7 @@ func NewFromString(jsonStr string) (*Client, error) {
 
 // NewFromBytes takes a slice of bytes, converts it to a string, then returns `NewFromString`, passing in the JSON string.
 func NewFromBytes(bytes []byte) (*Client, error) {
-	str := string(bytes)
-	return NewFromString(str)
+	return NewFromString(string(bytes))
 }
 
 // GetByPath thinking about what methods to add to the client to interact with the program
@@ -70,6 +69,14 @@ func (c *Client) setQuery(query []rune) {
 	c.query = query
 }
 
+// queryToken represents a single "step" in each query.
+// Queries are parsed into a []queryTokens to be used for exploring the JSON.
+type queryToken struct {
+	accessType string // object or array
+	keyReq     string // a key like "name"
+	indexReq   int    // an index selection like 0, 1, 2
+}
+
 func (c *Client) parseQuery() error {
 	tokens, err := scanQueryTokens(c.query)
 	if err != nil {
@@ -79,92 +86,117 @@ func (c *Client) parseQuery() error {
 	return nil
 }
 
+// scanQueryTokens scans a users query input into a collection of queryTokens.
+// Dora's query syntax is very straight forward, here is a quick BNF-like representation:
+//	  <dora-query>  ::= <querystring>
+//    <querystring> ::= "<query>,*"
+//    <query>       ::= "[<int>]" | ".<string>"
 func scanQueryTokens(query []rune) ([]queryToken, error) {
-	var qt []queryToken
+	var qts []queryToken
 	queryLen := len(query)
 
-	// Start at 1 to ignore the `$`, which has already been validated at this point
+	// Start at 1 to ignore the `$`, which has already been validated at this point.
 	for i := 1; i < queryLen-1; i++ {
 		switch query[i] {
 		case '.':
-			// Step into the key, ex: If we were at the `.` in `.name` now we will be at `n`
+			// Step into the key, ex:
+			// - If we were at the `.` in `.name` this bumps us to `n`.
 			i++
-			// Retrieve the selector, jump (how far to increase `i`), and err
-			s, jump, _, err := parseSelector(query[i:])
+
+			// Retrieve the selector and how far to increase `i` (jump).
+			s, jump, _, err := parseObjSelector(query[i:])
 			if err != nil {
-				return []queryToken{}, nil
-			}
-			qt = append(qt, queryToken{
-				accessType: "object",
-				keyReq:     string(s),
-			})
-			i += jump - 1
-		case '[':
-			// Step into the key or index, ex: If we were at the `[` in `["name"]` now we are at `"`
-			i++
-			// Retrieve the selector, jump (how far to increase `i`), and err
-			s, jump, isIndex, err := parseSelector(query[i:])
-			if err != nil {
-				return []queryToken{}, nil
-			}
-			if isIndex {
-				index, err := strconv.Atoi(string(s))
-				if err != nil {
-					return []queryToken{}, nil
-				}
-				qt = append(qt, queryToken{
-					accessType: "array",
-					indexReq:   index,
-				})
-			} else {
-				qt = append(qt, queryToken{
-					accessType: "object",
-					keyReq:     string(s),
-				})
+				return []queryToken{}, err
 			}
 
+			// Append our new query token and adjust the jump.
+			qts = append(qts, queryToken{accessType: "object", keyReq: string(s)})
+			i += jump - 1
+		case '[':
+			// Step into the index, ex:
+			// - If we were at the `[` in `[123]` this bumps us to `1`
+			i++
+
+			// Retrieve the selector and how far to increase `i` (jump).
+			s, jump, err := parseArraySelector(query[i:])
+			if err != nil {
+				return []queryToken{}, err
+			}
+
+			// The array selector is an int, and we want assert that.
+			index, err := strconv.Atoi(string(s))
+			if err != nil {
+				return []queryToken{}, err
+			}
+
+			// Append our new query token and adjust the jump
+			qts = append(qts, queryToken{accessType: "array", indexReq: index})
 			i += jump
 		default:
-			// TODO error?
+			return []queryToken{}, errSelectorSytax(string(query[i]))
 		}
 	}
 
-	return qt, nil
+	return qts, nil
 }
 
-func parseSelector(queryChunk []rune) ([]rune, int, bool, error) {
+func parseObjSelector(queryChunk []rune) ([]rune, int, bool, error) {
 	var jump int
 	var isIndex bool
 	queryLen := len(queryChunk)
 
-	if isLetter(queryChunk[jump]) {
-		for isLetter(queryChunk[jump]) && jump < queryLen-1 {
-			jump++
-		}
-		if jump < queryLen-1 {
+	// Consume the key name
+	if isPropertyKey(queryChunk[jump]) {
+		for isPropertyKey(queryChunk[jump]) && jump < queryLen-1 {
 			jump++
 		}
 
-		switch queryChunk[jump] {
-		case '"':
-			jump += 2 // we're finishing an object bracket notation selection "]
-		case '.', '[': // we're on to another selector
+		// After consuming the property key above, we should be onto the next selector.
+		// This has to either be another object or an array
+		if queryChunk[jump] == '.' || queryChunk[jump] == '[' {
 			return queryChunk[0:jump], jump, isIndex, nil
-		default:
-			if jump == queryLen-1 { // we are on the last byte
-				return queryChunk[0 : jump+1], jump, isIndex, nil
-			}
-			return nil, 0, isIndex, errors.New("TODO: helpful error message")
+		} else if jump == queryLen-1 {
+			// we are on the last byte
+			return queryChunk[0 : jump+1], jump, isIndex, nil
 		}
-	} else if isNumber(queryChunk[jump]) {
-		isIndex = true
+
+		return nil, 0, isIndex, errSelectorSytax(string(queryChunk[jump]))
+	}
+
+	return nil, 0, isIndex, fmt.Errorf(
+		"Error parsing object selector within query. Expected string, but started with %s",
+		string(queryChunk[jump]),
+	)
+}
+
+func parseArraySelector(queryChunk []rune) ([]rune, int, error) {
+	var jump int
+	queryLen := len(queryChunk)
+
+	// Consume the index and return it along with the jump
+	if isNumber(queryChunk[jump]) {
 		for isNumber(queryChunk[jump]) && jump < queryLen-1 {
 			jump++
 		}
-		return queryChunk[0:jump], jump, isIndex, nil
+		return queryChunk[0:jump], jump, nil
 	}
 
-	return nil, 0, isIndex, errors.New("TODO: helpful error message")
+	return nil, 0, fmt.Errorf(
+		"Error parsing array selector within query. Expected an int, but started with %s",
+		string(queryChunk[jump]),
+	)
+}
+
+func (c *Client) executeQuery() error {
+	// TODO: actually execute the query next
+	fmt.Println(c.query)
+	// parseQuery into parsedQuery type deal?
+	// iterate through c.program to fetch user request
+	return nil
+}
+
+func isPropertyKey(char rune) bool {
+	return isLetter(char) || isNumber(char)
 }
 
 func isLetter(char rune) bool {
@@ -175,43 +207,40 @@ func isNumber(char rune) bool {
 	return '0' <= char && char <= '9'
 }
 
-func (c *Client) executeQuery() error {
-	fmt.Println(c.query)
-	// parseQuery into parsedQuery type deal?
-	// iterate through c.program to fetch user request
-	return nil
-}
-
 func validateQueryRoot(query string, rootNodeType ast.RootNodeType) error {
 	if query[0] != '$' {
-		return errors.New(
-			"Incorrect syntax, query must start with `$` representing the root object or array",
-		)
+		return ErrNoDollarSignRoot
 	}
 
-	validObjQueryRoot := query[1] == '.' || query[1] == '['
+	// The query root after the `$` must be a `.` if the rootNodeType is an object
+	validObjQueryRoot := query[1] == '.'
 	if rootNodeType == ast.ObjectRoot && !validObjQueryRoot {
-		return errors.New(
-			"Incorrect syntax. Your root JSON type is an object. Therefore, path queries must begin by selecting a `key` from your root object. Ex: `$.keyOnRootObject` or `$[\"keyOnRootObject\"]`",
-		)
+		return ErrWrongObjectRootSelector
 	}
 
+	// The query root after the `$` must be a `[` if the rootNodeType is an array
 	validArrayQueryRoot := query[1] == '['
 	if rootNodeType == ast.ArrayRoot && !validArrayQueryRoot {
-		return errors.New(
-			"Incorrect syntax. Your root JSON type is an array. Therefore, path queries must begin by selecting an item by index on the root array. Ex: `$[0]` or `$[1]`",
-		)
+		return ErrWrongArrayRootSelector
 	}
 
 	return nil
 }
 
-// queryToken represents a single "step" in each query.
-// Queries are parsed into a []queryTokens to be used for exploring the JSON.
-type queryToken struct {
-	accessType string // object or array
-	keyReq     string // a key like "name"
-	indexReq   int    // an index selection like 0, 1, 2
+// ErrNoDollarSignRoot is used for telling the user the very first character must be a `$`
+var ErrNoDollarSignRoot = errors.New("Incorrect syntax, query must start with `$` representing the root object or array")
+
+// ErrWrongObjectRootSelector is used for telling the user their JSON root is an object and the selector found was not a `.`
+var ErrWrongObjectRootSelector = errors.New("Incorrect syntax. Your root JSON type is an object. Therefore, path queries must begin by selecting a `key` from your root object. Ex: `$.keyOnRootObject` or `$[\"keyOnRootObject\"]`")
+
+// ErrWrongArrayRootSelector is used for telling the user their JSON root is an array and the selector found was not a `[`
+var ErrWrongArrayRootSelector = errors.New("Incorrect syntax. Your root JSON type is an array. Therefore, path queries must begin by selecting an item by index on the root array. Ex: `$[0]` or `$[1]`")
+
+func errSelectorSytax(operator string) error {
+	return fmt.Errorf(
+		"Error parsing query, expected either a `.` for selections on an object or a `[` for selections on an array. Got: %s",
+		operator,
+	)
 }
 
 /*

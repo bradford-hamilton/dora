@@ -22,10 +22,8 @@ func main() {
 }
 
 // TODO
-// First query to add to tests tomorrow that's working (parsing into queryTokens): "$.item1[2].innerKey"
-// $.item1[2].innerKey.anotherValue however does not work
 // Since you can iterpolate at the call site, going to start with _only_ dot notation for object and bracket notation for arrays
-// For now I've whipped up a much more juvenile parser for the queries because I don't think it's going to need to do much
+// For now I've whipped up a much more juvenile parser for the queries because it doesn't need to do much right now
 
 const testJSONArray = `[
 	"item1",
