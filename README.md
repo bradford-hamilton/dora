@@ -5,7 +5,7 @@
     height="300px"
   />
 </div>
-<h1 align="center">Welcome to Dora the JSON explorer 👋</h1>
+<h1 align="center">Welcome to dora the JSON explorer 👋</h1>
 <p align="center">
   <a href="https://golang.org/dl" target="_blank">
     <img alt="Using go version 1.14" src="https://img.shields.io/badge/go-1.14-9cf.svg" />
