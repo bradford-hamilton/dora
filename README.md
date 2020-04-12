@@ -30,7 +30,7 @@ go get github.com/bradford-hamilton/dora/pkg/dora
 ```
 
 ## Usage
-Just notes for now until things mature a little
+### Just notes for now until things mature a little
 ```go
 c, err := dora.NewFromString(testJSONObject)
 if err != nil {
