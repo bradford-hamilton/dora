@@ -12,44 +12,44 @@ func TestScanQueryTokens(t *testing.T) {
 		{
 			[]rune("$.item1[2].innerKey"),
 			[]queryToken{
-				{accessType: "object", keyReq: "item1"},
-				{accessType: "array", indexReq: 2},
-				{accessType: "object", keyReq: "innerKey"},
+				{accessType: ObjectAccess, keyReq: "item1"},
+				{accessType: ArrayAccess, indexReq: 2},
+				{accessType: ObjectAccess, keyReq: "innerKey"},
 			},
 		},
 		{
 			[]rune("$[25].item3"),
 			[]queryToken{
-				{accessType: "array", indexReq: 25},
-				{accessType: "object", keyReq: "item3"},
+				{accessType: ArrayAccess, indexReq: 25},
+				{accessType: ObjectAccess, keyReq: "item3"},
 			},
 		},
 		{
 			[]rune("$[7].item4.innerKey"),
 			[]queryToken{
-				{accessType: "array", indexReq: 7},
-				{accessType: "object", keyReq: "item4"},
-				{accessType: "object", keyReq: "innerKey"},
+				{accessType: ArrayAccess, indexReq: 7},
+				{accessType: ObjectAccess, keyReq: "item4"},
+				{accessType: ObjectAccess, keyReq: "innerKey"},
 			},
 		},
 		{
 			[]rune("$.item1[2].innerKey.anotherValue"),
 			[]queryToken{
-				{accessType: "object", keyReq: "item1"},
-				{accessType: "array", indexReq: 2},
-				{accessType: "object", keyReq: "innerKey"},
-				{accessType: "object", keyReq: "anotherValue"},
+				{accessType: ObjectAccess, keyReq: "item1"},
+				{accessType: ArrayAccess, indexReq: 2},
+				{accessType: ObjectAccess, keyReq: "innerKey"},
+				{accessType: ObjectAccess, keyReq: "anotherValue"},
 			},
 		},
 		{
 			[]rune("$[0].item1[2].coolKey.neatValue[16]"),
 			[]queryToken{
-				{accessType: "array", indexReq: 0},
-				{accessType: "object", keyReq: "item1"},
-				{accessType: "array", indexReq: 2},
-				{accessType: "object", keyReq: "coolKey"},
-				{accessType: "object", keyReq: "neatValue"},
-				{accessType: "array", indexReq: 16},
+				{accessType: ArrayAccess, indexReq: 0},
+				{accessType: ObjectAccess, keyReq: "item1"},
+				{accessType: ArrayAccess, indexReq: 2},
+				{accessType: ObjectAccess, keyReq: "coolKey"},
+				{accessType: ObjectAccess, keyReq: "neatValue"},
+				{accessType: ArrayAccess, indexReq: 16},
 			},
 		},
 	}

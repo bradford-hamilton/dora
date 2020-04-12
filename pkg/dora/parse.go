@@ -5,12 +5,20 @@ import (
 	"strconv"
 )
 
+// The availble accessTypes
+const (
+	ObjectAccess accessType = iota
+	ArrayAccess
+)
+
+type accessType int
+
 // queryToken represents a single "step" in each query.
 // Queries are parsed into a []queryTokens to be used for exploring the JSON.
 type queryToken struct {
-	accessType string // object or array
-	keyReq     string // a key like "name"
-	indexReq   int    // an index selection like 0, 1, 2
+	accessType accessType // ObjectAccess or ArrayAccess
+	keyReq     string     // a key like "name"
+	indexReq   int        // an index selection like 0, 1, 2
 }
 
 // scanQueryTokens scans a users query input into a collection of queryTokens.
@@ -37,7 +45,7 @@ func scanQueryTokens(query []rune) ([]queryToken, error) {
 			}
 
 			// Append our new query token and adjust the jump.
-			qts = append(qts, queryToken{accessType: "object", keyReq: string(s)})
+			qts = append(qts, queryToken{accessType: ObjectAccess, keyReq: string(s)})
 			i += jump - 1
 		case '[':
 			// Step into the index, ex:
@@ -57,7 +65,7 @@ func scanQueryTokens(query []rune) ([]queryToken, error) {
 			}
 
 			// Append our new query token and adjust the jump
-			qts = append(qts, queryToken{accessType: "array", indexReq: index})
+			qts = append(qts, queryToken{accessType: ArrayAccess, indexReq: index})
 			i += jump
 		default:
 			return []queryToken{}, errSelectorSytax(string(query[i]))
