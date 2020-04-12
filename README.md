@@ -29,6 +29,70 @@
 go get github.com/bradford-hamilton/dora/pkg/dora
 ```
 
+## Usage
+Just notes for now until things mature a little
+```go
+c, err := dora.NewFromString(testJSONObject)
+if err != nil {
+  fmt.Printf("\nError creating client: %v\n", err)
+}
+
+result, err := c.GetByPath("$.obj.innerKey.innerKey3[0].kindOfStuff")
+if err != nil {
+  fmt.Println(err)
+}
+```
+
+```js
+- All queries start with $
+
+--------------------------------------------------------------------
+
+JSON Object:
+{
+  "name": "bradford",
+  "someArray": ["some", "values"]
+  "obj": {
+    "innerKey": {
+      "innerKey2": "innerValue",
+      "innerKey3": [{ "kindOfStuff": "neatStuff" }]
+    }
+  }
+}
+
+- Query must start with $.
+
+$.name                                  == "bradford"
+$.someArray                             == "[\"array\", \"values\"]"
+$.someArray[0]                          == "some"
+$.someArray[1]                          == "values"
+$.someArray[2]                          == error
+$.obj.innerKey.innerKey2                == "innerValue"
+$.obj.innerKey.innerKey3[0].kindOfStuff == "neatStuff"
+
+--------------------------------------------------------------------
+
+JSON Array:
+[
+  "some",
+  "values",
+  {
+    "objKey": "objValue",
+    "objKey2": [{ "catstack": "lampcat" }]
+  }
+]
+
+- Query must start with $[
+
+$[0]                     == "some"
+$[1]                     == "values"
+$[2]                     == "{ \"objKey\": \"objValue\", \"objKey2\": [{ \"catstack\": \"lampcat\" }] }"
+$[2].objKey              == "objValue"
+$[2].objKey2[0]          == "{ \"catstack\": \"lampcat\" }"
+$[2].objKey2[0].catstack == "lampcat"
+
+```
+
 ## Run tests
 
 ```shs
