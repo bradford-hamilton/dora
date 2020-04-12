@@ -62,7 +62,7 @@ func TestScanQueryTokens(t *testing.T) {
 
 		for i, tok := range tokens {
 			if tok.accessType != tt.expectedToken[i].accessType {
-				t.Fatalf("Expected access type of %s, got: %s", tt.expectedToken[i].accessType, tok.accessType)
+				t.Fatalf("Expected access type of %d, got: %d", tt.expectedToken[i].accessType, tok.accessType)
 			}
 			if tok.keyReq != tt.expectedToken[i].keyReq {
 				t.Fatalf("Expected keyReq of %s, got: %s", tt.expectedToken[i].keyReq, tok.keyReq)
