@@ -56,6 +56,7 @@ func LookupIdentifier(identifier string) (Type, error) {
 	return "", fmt.Errorf("Expected a valid JSON identifier. Found: %s", identifier)
 }
 
+// TODO: Come back to this for full robust JSON support
 var escapes = map[rune]int{
 	'"':  0, // Quotation mask
 	'\\': 1, // Reverse solidus
@@ -68,6 +69,7 @@ var escapes = map[rune]int{
 	'u':  8, // 4 hexadecimal digits
 }
 
+// TODO: Come back to this for full robust JSON support
 var escapeChars = map[string]string{
 	"b": "\b", // Backspace
 	"f": "\f", // Form feed

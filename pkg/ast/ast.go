@@ -43,7 +43,7 @@ type Property struct {
 	Value Value
 }
 
-// Identifier represents a JSON identifier which is this case is an object property key
+// Identifier represents a JSON object property key
 type Identifier struct {
 	Type  string // "Identifier"
 	Value string // "key1"
@@ -83,6 +83,7 @@ const (
 
 type arrayState int
 
+// Available string states
 const (
 	StringStart stringState = iota
 	StringQuoteOrChar

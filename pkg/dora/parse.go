@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// The availble accessTypes
+// The available accessTypes
 const (
 	ObjectAccess accessType = iota
 	ArrayAccess
