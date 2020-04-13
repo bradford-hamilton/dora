@@ -18,7 +18,7 @@ func main() {
 		fmt.Printf("\nError creating client: %v\n", err)
 	}
 
-	result, err := c.GetByPath("$.item1[2].some")
+	result, err := c.GetByPath("$.item1[2].some.thing")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -34,7 +34,7 @@ const testJSONArray = `[
 ]`
 
 const testJSONObject = `{
-	"item1": ["aryitem1", "aryitem2", {"some": "object"}],
+	"item1": ["aryitem1", "aryitem2", {"some": {"thing": "coolObj"}}],
 	"item2": "simplestringvalue",
 	"item3": {
 		"item4": {

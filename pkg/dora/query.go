@@ -53,7 +53,6 @@ func (c *Client) executeQuery() error {
 					if r == v.Key.Value {
 						switch val := v.Value.(type) {
 						case ast.Literal:
-							fmt.Println(val)
 							c.result = val.Value.(string)
 						}
 					}
