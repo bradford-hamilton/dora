@@ -24,7 +24,9 @@
   </a>
 </p>
 
-> Currently dora lexes/scans and parses JSON into an AST. Next step is adding methods to the dora client so that JSON can be fetched, explored, etc. Still open to ideas in general as this project hasn't quite found it's nitch
+> Dora makes exploring JSON fast, painless, and elegant. (total lie right now, it's 2-3x slower than encoding/json, painful because it's way unfinished, and ugly because there is no thought out API yet)
+
+### NOTE: Do not use, much wip. Currently dora lexes/scans and parses JSON into an AST. Still playing with different ideas, but spiked out a `GetByPath` call which would use a query syntax similar to javascript or JSONPath. Or should I pivot and make this an AST tool? With all sorts of cool visualizations or something and maybe a website for it?
 
 ## Install
 
