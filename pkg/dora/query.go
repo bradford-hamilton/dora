@@ -41,8 +41,29 @@ func (c *Client) executeQuery() error {
 	if ok {
 		currentType = "array"
 	}
+	parsedQueryLen := len(c.parsedQuery)
 
-	for i := 0; i < len(c.parsedQuery)-1; i++ {
+	for i := 0; i < parsedQueryLen; i++ {
+		// Final iteration
+		if i == parsedQueryLen-1 {
+			if currentType == "object" {
+				r := c.parsedQuery[i].keyReq
+
+				for _, v := range obj.Children {
+					if r == v.Key.Value {
+						switch val := v.Value.(type) {
+						case ast.Literal:
+							fmt.Println(val)
+							c.result = val.Value.(string)
+						}
+					}
+				}
+
+			} else {
+				// c.result = arr
+			}
+		}
+
 		if c.parsedQuery[i].accessType == ObjectAccess {
 			if currentType != "object" {
 				return fmt.Errorf("TODO: error")
@@ -86,13 +107,17 @@ func (c *Client) executeQuery() error {
 			//				- OR -> "please use iterator methods to act on anything besides a single return string/keyword"
 			// 						- Is it useful to get a sub chunk of some JSON as a string/bytes? Like would a user ever need to retrieve (GET specifically) something like this?
 			// 								- If not, should this resolve to one string/keyword and anything else iterator/explorer methods are used to act on parts of the JSON?
-			switch t := val.(type) {
+			switch v := val.(type) {
 			case ast.Object:
-				fmt.Print(t)
+				obj = v
+				currentType = "object"
+				break
 			case ast.Array:
-				fmt.Print(t)
+				arr = v
+				currentType = "array"
+				break
 			case ast.Literal:
-				fmt.Print(t)
+				fmt.Print(v)
 			}
 		}
 	}
