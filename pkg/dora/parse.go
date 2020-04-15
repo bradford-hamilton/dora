@@ -23,7 +23,7 @@ type queryToken struct {
 
 // scanQueryTokens scans a users query input into a collection of queryTokens.
 // Dora's query syntax is very straight forward, here is a quick BNF-like representation:
-//	  <dora-query>  ::= <querystring>
+//    <dora-query>  ::= <querystring>
 //    <querystring> ::= "<query>,*"
 //    <query>       ::= "[<int>]" | ".<string>"
 func scanQueryTokens(query []rune) ([]queryToken, error) {

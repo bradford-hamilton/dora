@@ -54,6 +54,13 @@ func (c *Client) executeQuery() error {
 						switch val := v.Value.(type) {
 						case ast.Literal:
 							c.result = val.Value.(string)
+
+						// TODO: Need to add a method to objects and arrays (maybe `Raw`?) that returns
+						// the string representation of themselves.
+						case ast.Object:
+							c.result = val.Type // TODO: val.Raw
+						case ast.Array:
+							c.result = val.Type // TODO: val.Raw
 						}
 					}
 				}
