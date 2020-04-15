@@ -23,16 +23,25 @@ type Object struct {
 	Children []Property
 }
 
-// Literal represents a JSON literal value. It holds it's Type as well as value.
-type Literal struct {
-	Type  string // "Literal"
-	Value Value
-}
-
 // Array represents a JSON array value. It holds it's Type as well as a slice of children values.
 type Array struct {
 	Type     string // "Array"
 	Children []Value
+}
+
+// TODO: initially thought implment Raw as object/array methods like this.
+// These could iterate over their children and return the string representation.
+// However I think there is a more effecient way to do this:
+// Maybe try adding locations to objects & arrays like start/end/etc.
+// Then this would be really straight forward as we may be able to just
+// return a slice of the original JSON from start to end.
+func (o *Object) Raw() string { return "" }
+func (a *Array) Raw() string  { return "" }
+
+// Literal represents a JSON literal value. It holds it's Type as well as value.
+type Literal struct {
+	Type  string // "Literal"
+	Value Value
 }
 
 // Property holds its own Type as well as a `Key` and `Value`. The Key is an Identifier
