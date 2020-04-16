@@ -21,22 +21,17 @@ type RootNode struct {
 type Object struct {
 	Type     string // "Object"
 	Children []Property
+	Start    int
+	End      int
 }
 
 // Array represents a JSON array value. It holds it's Type as well as a slice of children values.
 type Array struct {
 	Type     string // "Array"
 	Children []Value
+	Start    int
+	End      int
 }
-
-// TODO: initially thought implment Raw as object/array methods like this.
-// These could iterate over their children and return the string representation.
-// However I think there is a more effecient way to do this:
-// Maybe try adding locations to objects & arrays like start/end/etc.
-// Then this would be really straight forward as we may be able to just
-// return a slice of the original JSON from start to end.
-func (o *Object) Raw() string { return "" }
-func (a *Array) Raw() string  { return "" }
 
 // Literal represents a JSON literal value. It holds it's Type as well as value.
 type Literal struct {

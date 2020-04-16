@@ -39,6 +39,8 @@ type Token struct {
 	Type    Type
 	Literal string
 	Line    int
+	Start   int
+	End     int
 }
 
 var validJSONIdentifiers = map[string]Type{

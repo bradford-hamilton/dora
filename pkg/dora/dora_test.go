@@ -1,6 +1,7 @@
 package dora
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -70,6 +71,66 @@ func TestScanQueryTokens(t *testing.T) {
 			if tok.indexReq != tt.expectedToken[i].indexReq {
 				t.Fatalf("Expected indexReq of %d, got: %d", tt.expectedToken[i].indexReq, tok.indexReq)
 			}
+		}
+	}
+}
+
+func TestGetByPath(t *testing.T) {
+	tests := []struct {
+		testJSON       string
+		query          string
+		expectedResult string
+	}{
+		{
+			"{\"item1\": [1, 2, {\"innerKey\": \"innerValue\"}]}",
+			"$.item1[2].innerKey",
+			"innerValue",
+		},
+		{
+			"[1, { \"hey\": \"there\"}, 3]",
+			"$[1].hey",
+			"there",
+		},
+		{
+			"{\"item1\": [\"aryitem1\", \"aryitem2\", {\"some\": {\"thing\": \"coolObj\"}}]}",
+			"$.item1[2].some",
+			"{\"thing\": \"coolObj\"}",
+		},
+		{
+			"{\"someArray\": [1, 2, 3]}",
+			"$.someArray",
+			"[1, 2, 3]",
+		},
+		{
+			"{\"someVal\": true}",
+			"$.someVal",
+			"true",
+		},
+		{
+			"{\"someVal\": false}",
+			"$.someVal",
+			"false",
+		},
+		{
+			"{\"someVal\": null}",
+			"$.someVal",
+			"null",
+		},
+	}
+
+	for _, tt := range tests {
+		c, err := NewFromString(tt.testJSON)
+		if err != nil {
+			t.Fatalf("\nError creating client: %v\n", err)
+		}
+
+		result, err := c.GetByPath(tt.query)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if result != tt.expectedResult {
+			t.Fatalf("Expected result type of %s, got: %s", tt.expectedResult, result)
 		}
 	}
 }

@@ -9,6 +9,7 @@ import (
 
 // Client represents a dora client. It exposes public methods which access to the underlying data
 type Client struct {
+	input       []rune
 	program     *ast.RootNode
 	query       []rune
 	parsedQuery []queryToken
@@ -25,7 +26,7 @@ func NewFromString(jsonStr string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{program: &program}, nil
+	return &Client{program: &program, input: l.Input}, nil
 }
 
 // NewFromBytes takes a slice of bytes, converts it to a string, then returns `NewFromString`, passing in the JSON string.

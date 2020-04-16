@@ -82,6 +82,7 @@ func (p *Parser) parseJSONObject() ast.Value {
 		case ast.ObjStart:
 			if p.currentTokenTypeIs(token.LeftBrace) {
 				objState = ast.ObjOpen
+				obj.Start = p.currentToken.Start
 				p.nextToken()
 			} else {
 				p.parseError(fmt.Sprintf(
@@ -93,6 +94,7 @@ func (p *Parser) parseJSONObject() ast.Value {
 		case ast.ObjOpen:
 			if p.currentTokenTypeIs(token.RightBrace) {
 				p.nextToken()
+				obj.End = p.currentToken.End
 				return obj
 			}
 			prop := p.parseProperty()
@@ -101,6 +103,7 @@ func (p *Parser) parseJSONObject() ast.Value {
 		case ast.ObjProperty:
 			if p.currentTokenTypeIs(token.RightBrace) {
 				p.nextToken()
+				obj.End = p.currentToken.Start
 				return obj
 			} else if p.currentTokenTypeIs(token.Comma) {
 				objState = ast.ObjComma
@@ -121,6 +124,8 @@ func (p *Parser) parseJSONObject() ast.Value {
 		}
 	}
 
+	obj.End = p.currentToken.Start
+
 	return obj
 }
 
@@ -133,11 +138,13 @@ func (p *Parser) parseJSONArray() ast.Value {
 		switch arrayState {
 		case ast.ArrayStart:
 			if p.currentTokenTypeIs(token.LeftBracket) {
+				array.Start = p.currentToken.Start
 				arrayState = ast.ArrayOpen
 				p.nextToken()
 			}
 		case ast.ArrayOpen:
 			if p.currentTokenTypeIs(token.RightBracket) {
+				array.End = p.currentToken.End
 				p.nextToken()
 				return array
 			}
@@ -149,6 +156,7 @@ func (p *Parser) parseJSONArray() ast.Value {
 			}
 		case ast.ArrayValue:
 			if p.currentTokenTypeIs(token.RightBracket) {
+				array.End = p.currentToken.End
 				p.nextToken()
 				return array
 			} else if p.currentTokenTypeIs(token.Comma) {
@@ -161,7 +169,7 @@ func (p *Parser) parseJSONArray() ast.Value {
 			arrayState = ast.ArrayValue
 		}
 	}
-
+	array.End = p.currentToken.Start
 	return array
 }
 

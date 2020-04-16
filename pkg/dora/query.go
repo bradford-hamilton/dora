@@ -48,23 +48,28 @@ func (c *Client) executeQuery() error {
 		if i == parsedQueryLen-1 {
 			if currentType == "object" {
 				r := c.parsedQuery[i].keyReq
-
 				for _, v := range obj.Children {
 					if r == v.Key.Value {
 						switch val := v.Value.(type) {
 						case ast.Literal:
-							c.result = val.Value.(string)
+							switch lit := val.Value.(type) {
+							case string:
+								c.result = lit
+							case int:
+								c.result = string(lit)
+							case bool:
+								c.result = fmt.Sprintf("%v", lit)
+							case nil:
+								c.result = "null"
+							}
 
-						// TODO: Need to add a method to objects and arrays (maybe `Raw`?) that returns
-						// the string representation of themselves.
 						case ast.Object:
-							c.result = val.Type // TODO: val.Raw
+							c.result = string(c.input[val.Start:val.End])
 						case ast.Array:
-							c.result = val.Type // TODO: val.Raw
+							c.result = string(c.input[val.Start:val.End])
 						}
 					}
 				}
-
 			} else {
 				// c.result = arr
 			}
