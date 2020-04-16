@@ -35,23 +35,17 @@ func New(l *lexer.Lexer) *Parser {
 // which holds a slice of Values (and in turn, the rest of the tree)
 func (p *Parser) ParseProgram() (ast.RootNode, error) {
 	var rootNode ast.RootNode
-
-	if p.currentTokenTypeIs(token.LeftBrace) {
-		val := p.parseJSONObject()
-		if val != nil {
-			rootNode.RootValue = &val
-		}
-		return rootNode, nil
-	} else if p.currentTokenTypeIs(token.LeftBracket) {
+	if p.currentTokenTypeIs(token.LeftBracket) {
 		rootNode.Type = ast.ArrayRoot
-		val := p.parseJSONArray()
-		if val != nil {
-			rootNode.RootValue = &val
-		}
-		return rootNode, nil
 	}
 
-	return ast.RootNode{}, errors.New("error")
+	val := p.parseValue()
+	if val == nil {
+		return ast.RootNode{}, errors.New("error")
+	}
+	rootNode.RootValue = &val
+
+	return rootNode, nil
 }
 
 // nextToken sets our current token to the peek token and the peek token to
