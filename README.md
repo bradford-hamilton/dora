@@ -26,7 +26,7 @@
 
 > Dora makes exploring JSON fast, painless, and elegant. (total lie right now, it's 2-3x slower than encoding/json, painful because it's way unfinished, and ugly because there is no thought out API yet)
 
-### NOTE: Please don't use yet, it's currently a WIP. Right now dora lexes/scans and parses JSON into an AST. Spiked out a `GetByPath` call which would use a query syntax similar to javascript or JSONPath. This one feature so far is getting close to functional/stable. May also expand project to have an AST explorer of some sort.
+### NOTE: Please don't use yet, it's currently a WIP. Right now dora lexes/scans and parses JSON into an AST. Spiked out a `GetByPath` call which uses a query syntax similar to javascript or JSONPath. This one feature so far is getting close to functional/stable. May also expand project to have an AST explorer of some sort.
 
 ## Install
 
@@ -35,25 +35,27 @@ go get github.com/bradford-hamilton/dora/pkg/dora
 ```
 
 ## Usage
-### Just notes for now until things mature a little
 ```go
-c, err := dora.NewFromString(testJSONObject)
+c, err := dora.NewFromString("{\"someObj\": [1, { \"neatKey\": \"neatVal\" }, true] }")
 if err != nil {
   fmt.Printf("\nError creating client: %v\n", err)
 }
 
-result, err := c.GetByPath("$.obj.innerKey.innerKey3[0].kindOfStuff")
+result, err := c.GetByPath("$.someObj[1].neatKey") // result == "neatVal"
 if err != nil {
-  fmt.Println(err)
+  fmt.Printf("\nError executing GetByPath query: %v\n", err)
 }
 ```
 
+## Query Syntax
+
+1. All queries start with `$`.
+2. Access objects with `.` only, no support for object access with bracket notation `[]`
+    - This is intentional, as you can interpolate at the call site, so there is no reason to offer two syntaxes that do the same thing.
+3. Access arrays by index with bracket notation `[]`
+
+ Example with a JSON object as root value:
 ```js
-- All queries start with $
-
---------------------------------------------------------------------
-
-JSON Object:
 {
   "name": "bradford",
   "someArray": ["some", "values"]
@@ -65,8 +67,6 @@ JSON Object:
   }
 }
 
-- Query must start with $.
-
 $.name                                  == "bradford"
 $.someArray                             == "[\"array\", \"values\"]"
 $.someArray[0]                          == "some"
@@ -74,10 +74,10 @@ $.someArray[1]                          == "values"
 $.someArray[2]                          == error
 $.obj.innerKey.innerKey2                == "innerValue"
 $.obj.innerKey.innerKey3[0].kindOfStuff == "neatStuff"
+```
 
---------------------------------------------------------------------
-
-JSON Array:
+ Example with a JSON array as root value:
+```js
 [
   "some",
   "values",
@@ -87,15 +87,12 @@ JSON Array:
   }
 ]
 
-- Query must start with $[
-
 $[0]                     == "some"
 $[1]                     == "values"
 $[2]                     == "{ \"objKey\": \"objValue\", \"objKey2\": [{ \"catstack\": \"lampcat\" }] }"
 $[2].objKey              == "objValue"
 $[2].objKey2[0]          == "{ \"catstack\": \"lampcat\" }"
 $[2].objKey2[0].catstack == "lampcat"
-
 ```
 
 ## Run tests
