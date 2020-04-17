@@ -162,6 +162,8 @@ func (p *Parser) parseJSONArray() ast.Value {
 			} else if p.currentTokenTypeIs(token.Comma) {
 				arrayState = ast.ArrayComma
 				p.nextToken()
+			} else {
+				fmt.Println("TODO: error")
 			}
 		case ast.ArrayComma:
 			val := p.parseValue()
@@ -193,11 +195,8 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 	case token.False:
 		val.Value = false
 		return val
-	case token.Null:
-		val.Value = nil
-		return val
 	default:
-		val.Value = nil
+		val.Value = "null"
 		return val
 	}
 }

@@ -76,50 +76,52 @@ func TestScanQueryTokens(t *testing.T) {
 }
 
 func TestGetByPath(t *testing.T) {
+	testJSON := `
+{
+	"data": {
+		"users": [{
+			"first_name": "bradford",
+			"last_name": "human",
+			"email": "brad@example.com",
+			"confirmed": true,
+			"allergies": null,
+			"age": 30,
+			"random_items": [true, { "dog_name": "ellie" }]
+		}]
+	}
+}`
 	tests := []struct {
-		testJSON       string
 		query          string
 		expectedResult string
 	}{
 		{
-			"{\"item1\": [1, 2, {\"innerKey\": \"innerValue\"}]}",
-			"$.item1[2].innerKey",
-			"innerValue",
+			"$.data.users[0].first_name",
+			"bradford",
 		},
 		{
-			"[1, { \"hey\": \"there\"}, 3]",
-			"$[1].hey",
-			"there",
-		},
-		{
-			"{\"item1\": [\"aryitem1\", \"aryitem2\", {\"some\": {\"thing\": \"coolObj\"}}]}",
-			"$.item1[2].some",
-			"{\"thing\": \"coolObj\"}",
-		},
-		{
-			"{\"someArray\": [1, 2, 3]}",
-			"$.someArray",
-			"[1, 2, 3]",
-		},
-		{
-			"{\"someVal\": true}",
-			"$.someVal",
+			"$.data.users[0].confirmed",
 			"true",
 		},
 		{
-			"{\"someVal\": false}",
-			"$.someVal",
-			"false",
+			"$.data.users[0].allergies",
+			"null",
 		},
 		{
-			"{\"someVal\": null}",
-			"$.someVal",
-			"null",
+			"$.data.users[0].age",
+			"30",
+		},
+		{
+			"$.data.users[0].random_items",
+			"[true, { \"dog_name\": \"ellie\" }]",
+		},
+		{
+			"$.data.users[0].random_items[1]",
+			"{ \"dog_name\": \"ellie\" }",
 		},
 	}
 
 	for _, tt := range tests {
-		c, err := NewFromString(tt.testJSON)
+		c, err := NewFromString(testJSON)
 		if err != nil {
 			t.Fatalf("\nError creating client: %v\n", err)
 		}
