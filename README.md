@@ -26,7 +26,7 @@
 
 > Dora makes exploring JSON fast, painless, and elegant. (total lie right now, it's 2-3x slower than encoding/json, painful because it's way unfinished, and ugly because there is no thought out API yet)
 
-### NOTE: Do not use, much wip. Currently dora lexes/scans and parses JSON into an AST. Still playing with different ideas, but spiked out a `GetByPath` call which would use a query syntax similar to javascript or JSONPath. Or should I pivot and make this an AST tool? With all sorts of cool visualizations or something and maybe a website for it?
+### NOTE: Please don't use yet, it's currently a WIP. Right now dora lexes/scans and parses JSON into an AST. Spiked out a `GetByPath` call which would use a query syntax similar to javascript or JSONPath. This one feature so far is getting close to functional/stable. May also expand project to have an AST explorer of some sort.
 
 ## Install
 
