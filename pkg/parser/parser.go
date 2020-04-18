@@ -11,7 +11,8 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/token"
 )
 
-// Parser holds a Lexer, its errors, the currentToken, peekToken (next token)
+// Parser holds a Lexer, errors, the currentToken, and the peek peekToken (next token).
+// Parser methods handle iterating through tokens and building and AST.
 type Parser struct {
 	lexer        *lexer.Lexer
 	errors       []string
@@ -72,7 +73,7 @@ func (p *Parser) parseValue() ast.Value {
 	}
 }
 
-// parseJSONObject is called when an open left brace `{` is found
+// parseJSONObject is called when an open left brace `{` token is found
 func (p *Parser) parseJSONObject() ast.Value {
 	obj := ast.Object{Type: "Object"}
 	objState := ast.ObjStart
@@ -129,7 +130,7 @@ func (p *Parser) parseJSONObject() ast.Value {
 	return obj
 }
 
-// parseJSONArray is called when an open left bracket `[` is found
+// parseJSONArray is called when an open left bracket `[` token is found
 func (p *Parser) parseJSONArray() ast.Value {
 	array := ast.Array{Type: "Array"}
 	arrayState := ast.ArrayStart
@@ -175,6 +176,7 @@ func (p *Parser) parseJSONArray() ast.Value {
 	return array
 }
 
+// parseJSONLiteral switches on the current token's type, sets the Value on a return val and returns it.
 func (p *Parser) parseJSONLiteral() ast.Literal {
 	val := ast.Literal{Type: "Literal"}
 
@@ -212,7 +214,6 @@ func (p *Parser) parseProperty() ast.Property {
 				key := ast.Identifier{
 					Type:  "Identifier",
 					Value: p.parseString(),
-					Raw:   p.currentToken.Literal,
 				}
 				prop.Key = key
 				propertyState = ast.PropertyKey

@@ -11,7 +11,7 @@ import (
 // Since you can iterpolate at the call site, going to start with _only_ dot notation for object and bracket notation for arrays
 // For now I've whipped up a much more juvenile parser for the queries because it doesn't need to do much right now
 
-// Currently using main as my own testing ground as if dora is 3rd party
+// Currently using main as my own testing ground as if dora was 3rd party
 func main() {
 	c, err := dora.NewFromString(testJSONObject)
 	if err != nil {

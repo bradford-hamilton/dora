@@ -8,16 +8,18 @@ const (
 	ArrayRoot
 )
 
+// RootNodeType is a type alias for an int
 type RootNodeType int
 
 // RootNode is what starts every parsed AST. There is a `Type` field so that
-// you can ask which root node type starts the tree. From there you can access the
+// you can ask which root node type starts the tree.
 type RootNode struct {
 	RootValue *Value
 	Type      RootNodeType
 }
 
-// Object represents a JSON object. It holds a slice of Property as its children.
+// Object represents a JSON object. It holds a slice of Property as its children,
+// a Type ("Object"), and start & end code points for displaying.
 type Object struct {
 	Type     string // "Object"
 	Children []Property
@@ -25,7 +27,8 @@ type Object struct {
 	End      int
 }
 
-// Array represents a JSON array value. It holds it's Type as well as a slice of children values.
+// Array represents a JSON array It holds a slice of Value as its children,
+// a Type ("Array"), and start & end code points for displaying.
 type Array struct {
 	Type     string // "Array"
 	Children []Value
@@ -33,16 +36,16 @@ type Array struct {
 	End      int
 }
 
-// Literal represents a JSON literal value. It holds it's Type as well as value.
+// Literal represents a JSON literal value. It holds a Type ("Literal") and the actual value.
 type Literal struct {
 	Type  string // "Literal"
 	Value Value
 }
 
-// Property holds its own Type as well as a `Key` and `Value`. The Key is an Identifier
-// and the value is a Value so that we can continue to parse obj/array/literals at this point.
+// Property holds a Type ("Property") as well as a `Key` and `Value`. The Key is an Identifier
+// and the value is any Value.
 type Property struct {
-	Type  string
+	Type  string // "Property"
 	Key   Identifier
 	Value Value
 }
@@ -51,14 +54,13 @@ type Property struct {
 type Identifier struct {
 	Type  string // "Identifier"
 	Value string // "key1"
-	Raw   string // "\"key1\""
 }
 
-// Value will eventually hold some methods that all Values must implement. For now
-// it is what allows us to switch over 3 different parsable types
+// Value will eventually have some methods that all Values must implement. For now
+// it represents any JSON value (object | array | boolean | string | number | null)
 type Value interface{}
 
-// Available object states
+// Available object states for use in parsing
 const (
 	ObjStart objectState = iota
 	ObjOpen
@@ -68,7 +70,7 @@ const (
 
 type objectState int
 
-// Available property states
+// Available property states for use in parsing
 const (
 	PropertyStart propertyState = iota
 	PropertyKey
@@ -77,7 +79,7 @@ const (
 
 type propertyState int
 
-// Available array states
+// Available array states for use in parsing
 const (
 	ArrayStart arrayState = iota
 	ArrayOpen
@@ -87,7 +89,7 @@ const (
 
 type arrayState int
 
-// Available string states
+// Available string states for use in parsing
 const (
 	StringStart stringState = iota
 	StringQuoteOrChar
@@ -96,7 +98,7 @@ const (
 
 type stringState int
 
-// Available number states
+// Available number states for use in parsing
 const (
 	NumberStart numberState = iota
 	NumberMinus

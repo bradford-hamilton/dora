@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// The available accessTypes
+// The available accessTypes for a dora query
 const (
 	ObjectAccess accessType = iota
 	ArrayAccess
@@ -25,7 +25,7 @@ type queryToken struct {
 // Dora's query syntax is very straight forward, here is a quick BNF-like representation:
 //    <dora-query>  ::= <querystring>
 //    <querystring> ::= "<query>,*"
-//    <query>       ::= "[<int>]" | ".<string>"
+//    <query>       ::= "[<int>]" | "." + <string>
 func scanQueryTokens(query []rune) ([]queryToken, error) {
 	var qts []queryToken
 	queryLen := len(query)
@@ -34,8 +34,7 @@ func scanQueryTokens(query []rune) ([]queryToken, error) {
 	for i := 1; i < queryLen-1; i++ {
 		switch query[i] {
 		case '.':
-			// Step into the key, ex:
-			// - If we were at the `.` in `.name` this bumps us to `n`.
+			// Step into the key, ex: - If we were at the `.` in `.name` this bumps us to `n`.
 			i++
 
 			// Retrieve the selector and how far to increase `i` (jump).
@@ -48,8 +47,7 @@ func scanQueryTokens(query []rune) ([]queryToken, error) {
 			qts = append(qts, queryToken{accessType: ObjectAccess, keyReq: string(s)})
 			i += jump - 1
 		case '[':
-			// Step into the index, ex:
-			// - If we were at the `[` in `[123]` this bumps us to `1`
+			// Step into the index, ex: - If we were at the `[` in `[123]` this bumps us to `1`
 			i++
 
 			// Retrieve the selector and how far to increase `i` (jump).

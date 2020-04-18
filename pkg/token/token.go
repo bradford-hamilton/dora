@@ -8,33 +8,35 @@ import (
 // All the different tokens for supporting JSON
 const (
 	// Token/character we don't know about
-	Illegal = "ILLEGAL"
+	Illegal Type = "ILLEGAL"
 
 	// End of file
-	EOF = "EOF"
+	EOF Type = "EOF"
 
 	// Literals
-	String = "STRING"
-	Number = "NUMBER"
+	String Type = "STRING"
+	Number Type = "NUMBER"
 
 	// The six structural tokens
-	LeftBrace    = "{"
-	RightBrace   = "}"
-	LeftBracket  = "["
-	RightBracket = "]"
-	Comma        = ","
-	Colon        = ":"
+	LeftBrace    Type = "{"
+	RightBrace   Type = "}"
+	LeftBracket  Type = "["
+	RightBracket Type = "]"
+	Comma        Type = ","
+	Colon        Type = ":"
 
 	// Values
-	True  = "TRUE"
-	False = "FALSE"
-	Null  = "NULL"
+	True  Type = "TRUE"
+	False Type = "FALSE"
+	Null  Type = "NULL"
 )
 
 // Type is a type alias for a string
 type Type string
 
-// Token is a struct representing a JSON token - holds a Type and a literal
+// Token is a struct representing a JSON token - It holds information like its Type and Literal, as well
+// as Start, End, and Line fields. Line is used for better error handling, while Start and End are used
+// to return objects/arrays from querys.
 type Token struct {
 	Type    Type
 	Literal string

@@ -7,7 +7,9 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/parser"
 )
 
-// Client represents a dora client. It exposes public methods which access to the underlying data
+// Client represents a dora client. The client holds things like a copy of the input, the program (the
+// parsed AST representation built with Go types), the user's query & parsed version of the query, and
+// a query result. Client exposes public methods which access this underlying data.
 type Client struct {
 	input       []rune
 	program     *ast.RootNode
@@ -18,7 +20,7 @@ type Client struct {
 
 // NewFromString takes a string, creates a lexer, creates a parser from the lexer,
 // and parses the program into an AST. Methods on the Client give access to private
-// AST held inside
+// data like the AST held inside.
 func NewFromString(jsonStr string) (*Client, error) {
 	l := lexer.New(jsonStr)
 	p := parser.New(l)
@@ -34,7 +36,7 @@ func NewFromBytes(bytes []byte) (*Client, error) {
 	return NewFromString(string(bytes))
 }
 
-// GetByPath thinking about what methods to add to the client to interact with the program
+// GetByPath takes a dora query, prepares and validates it, executes the query, and returns the result or an error.
 func (c *Client) GetByPath(query string) (string, error) {
 	if err := c.prepareQuery(query, c.program.Type); err != nil {
 		return "", err

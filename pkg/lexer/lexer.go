@@ -5,7 +5,8 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/token"
 )
 
-// Lexer performs lexical analysis/scanning of the JSON
+// Lexer holds input data and fields that help with scanning.
+// It's methods perform lexical analysis/scanning.
 type Lexer struct {
 	Input        []rune
 	char         rune // current char under examination

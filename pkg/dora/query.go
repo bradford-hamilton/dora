@@ -8,7 +8,7 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/ast"
 )
 
-// prepareQuery validates the query root, sets the query on the client struct, and parses the query into parsedQuery of some sort.
+// prepareQuery validates the query root, sets the query on the client struct, and parses the query.
 func (c *Client) prepareQuery(query string, rootNodeType ast.RootNodeType) error {
 	if err := validateQueryRoot(query, c.program.Type); err != nil {
 		return err
@@ -44,7 +44,7 @@ func (c *Client) executeQuery() error {
 	parsedQueryLen := len(c.parsedQuery)
 
 	for i := 0; i < parsedQueryLen; i++ {
-		// Final iteration
+		// If i == parsedQueryLen-1, we are on the final iteration
 		if i == parsedQueryLen-1 {
 			if currentType == "object" {
 				r := c.parsedQuery[i].keyReq
