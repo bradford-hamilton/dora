@@ -24,9 +24,9 @@
   </a>
 </p>
 
-> Dora makes exploring JSON fast, painless, and elegant. (total lie right now, it's 2-3x slower than encoding/json, painful because it's way unfinished, and ugly because there is no thought out API yet)
+> Dora makes exploring JSON fast, painless, and elegant. (little bit of a lie, it's at least 2-3x slower than encoding/json)
 
-### NOTE: Please don't use yet, it's currently a WIP. Right now dora lexes/scans and parses JSON into an AST. Spiked out a `GetByPath` call which uses a query syntax similar to javascript or JSONPath. This one feature so far is getting close to functional/stable. May also expand project to have an AST explorer of some sort.
+### NOTE: dora is currently a WIP and the main focus is for teaching in a medium blog post I will publishing soon. In other words, dora is a long way out from being a tool I'd actually want to use in Go. It will likely stay that way, unless there turns out to be any interest and the community contributed. In that case this could turn into a real tool pretty quickly. Some thoughts on getting there: The first thing we would want to focus on would be speed and memory consumption. Both are currently unnaccpetable.
 
 ## Install
 
