@@ -88,6 +88,16 @@ func TestGetByPath(t *testing.T) {
 			"age": 30,
 			"random_items": [true, { "dog_name": "ellie" }]
 		}]
+	},
+	"codes": [200, 201, 400, 403, 404],
+	"superNest": {
+		"inner1": {
+			"inner2": {
+				"inner3": {
+					"inner4": [{ "inner5": { "inner6": "neato" } }]
+				}
+			}
+		}
 	}
 }`
 	tests := []struct {
@@ -117,6 +127,18 @@ func TestGetByPath(t *testing.T) {
 		{
 			"$.data.users[0].random_items[1]",
 			"{ \"dog_name\": \"ellie\" }",
+		},
+		{
+			"$.codes",
+			"[200, 201, 400, 403, 404]",
+		},
+		{
+			"$.codes[1]",
+			"201",
+		},
+		{
+			"$.superNest.inner1.inner2.inner3.inner4[0].inner5.inner6",
+			"neato",
 		},
 	}
 

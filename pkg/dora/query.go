@@ -33,34 +33,30 @@ func (c *Client) parseQuery() error {
 	return nil
 }
 
+// Object is a simple constant used throughout executeQuery for checking conditions
+const Object = "object"
+
+// Array is a simple constant used throughout executeQuery for checking conditions
+const Array = "array"
+
 func (c *Client) executeQuery() error {
 	rootVal := *c.program.RootValue
 	obj, _ := rootVal.(ast.Object)
 	arr, ok := rootVal.(ast.Array)
-	currentType := "object"
+	currentType := Object
 	if ok {
-		currentType = "array"
+		currentType = Array
 	}
 	parsedQueryLen := len(c.parsedQuery)
 
 	for i := 0; i < parsedQueryLen; i++ {
 		// If i == parsedQueryLen-1, we are on the final iteration
 		if i == parsedQueryLen-1 {
-			if currentType == "object" {
-				r := c.parsedQuery[i].keyReq
-				for _, v := range obj.Children {
-					if r == v.Key.Value {
-						c.setResultFromValue(v.Value)
-					}
-				}
-			} else {
-				ind := c.parsedQuery[i].indexReq
-				c.setResultFromValue(arr.Children[ind])
-			}
+			c.setFinalValue(currentType, i, obj, arr)
 		}
 
 		if c.parsedQuery[i].accessType == ObjectAccess {
-			if currentType != "object" {
+			if currentType != Object {
 				return fmt.Errorf("TODO: error")
 			}
 			var found bool
@@ -72,12 +68,12 @@ func (c *Client) executeQuery() error {
 					a, astArr := v.Value.(ast.Array)
 					if astObj {
 						obj = o
-						currentType = "object"
+						currentType = Object
 						break
 					}
 					if astArr {
 						arr = a
-						currentType = "array"
+						currentType = Array
 						break
 					}
 				}
@@ -86,7 +82,7 @@ func (c *Client) executeQuery() error {
 				return fmt.Errorf("Sorry, could not find a key with that value. Key: %s", c.parsedQuery[i].keyReq)
 			}
 		} else {
-			if currentType != "array" {
+			if currentType != Array {
 				return fmt.Errorf("TODO: error")
 			}
 			qt := c.parsedQuery[i]
@@ -95,11 +91,11 @@ func (c *Client) executeQuery() error {
 			switch v := val.(type) {
 			case ast.Object:
 				obj = v
-				currentType = "object"
+				currentType = Object
 				break
 			case ast.Array:
 				arr = v
-				currentType = "array"
+				currentType = Array
 				break
 			case ast.Literal:
 				// If we're on the final value, return it
@@ -113,6 +109,20 @@ func (c *Client) executeQuery() error {
 	}
 
 	return nil
+}
+
+func (c *Client) setFinalValue(currentType string, index int, obj ast.Object, arr ast.Array) {
+	if currentType == Object {
+		r := c.parsedQuery[index].keyReq
+		for _, v := range obj.Children {
+			if r == v.Key.Value {
+				c.setResultFromValue(v.Value)
+			}
+		}
+	} else {
+		ind := c.parsedQuery[index].indexReq
+		c.setResultFromValue(arr.Children[ind])
+	}
 }
 
 func (c *Client) setResultFromValue(value ast.Value) {
