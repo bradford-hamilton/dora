@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/bradford-hamilton/dora/pkg/ast"
 	"github.com/bradford-hamilton/dora/pkg/lexer"
@@ -42,7 +43,11 @@ func (p *Parser) ParseProgram() (ast.RootNode, error) {
 
 	val := p.parseValue()
 	if val == nil {
-		return ast.RootNode{}, errors.New("error")
+		p.parseError(fmt.Sprintf(
+			"Error parsing JSON expected a value, got: %v:",
+			p.currentToken.Literal,
+		))
+		return ast.RootNode{}, errors.New(p.Errors())
 	}
 	rootNode.RootValue = &val
 
@@ -164,7 +169,10 @@ func (p *Parser) parseJSONArray() ast.Value {
 				arrayState = ast.ArrayComma
 				p.nextToken()
 			} else {
-				fmt.Println("TODO: error")
+				p.parseError(fmt.Sprintf(
+					"Error parsing property. Expected RightBrace or Comma token, got: %s",
+					p.currentToken.Literal,
+				))
 			}
 		case ast.ArrayComma:
 			val := p.parseValue()
@@ -203,6 +211,7 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 	}
 }
 
+// parseProperty is used to parse an object property and in doing so handles setting the `key`:`value` pair.
 func (p *Parser) parseProperty() ast.Property {
 	prop := ast.Property{Type: "Property"}
 	propertyState := ast.PropertyStart
@@ -244,11 +253,14 @@ func (p *Parser) parseProperty() ast.Property {
 	return prop
 }
 
+// TODO: all the tedius ecaping, etc still needs to be applied here
 func (p *Parser) parseString() string {
-	// TODO: all the tedius ecaping, etc still needs to be applied here
 	return p.currentToken.Literal
 }
 
+// expectPeekType checks the next token type against the one passed in. If it matches,
+// we call p.nextToken() to set us to the expected token and return true. If the expected
+// type does not match, we add a peek error and return false.
 func (p *Parser) expectPeekType(t token.Type) bool {
 	if p.peekTokenTypeIs(t) {
 		p.nextToken()
@@ -262,6 +274,7 @@ func (p *Parser) peekTokenTypeIs(t token.Type) bool {
 	return p.peekToken.Type == t
 }
 
+// peekError is a small wrapper to add a peek error to our parser's errors field.
 func (p *Parser) peekError(t token.Type) {
 	msg := fmt.Sprintf(
 		"Line: %d: Expected next token to be %s, got: %s instead",
@@ -272,11 +285,13 @@ func (p *Parser) peekError(t token.Type) {
 	p.errors = append(p.errors, msg)
 }
 
+// parseError is very similar to `peekError`, except it simply takes a string message that
+// gets appended to the parser's errors
 func (p *Parser) parseError(msg string) {
 	p.errors = append(p.errors, msg)
 }
 
 // Errors is simply a helper function that returns the parser's errors
-func (p *Parser) Errors() []string {
-	return p.errors
+func (p *Parser) Errors() string {
+	return strings.Join(p.errors, ", ")
 }

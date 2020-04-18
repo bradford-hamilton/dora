@@ -24,6 +24,8 @@ func (c *Client) setQuery(query []rune) {
 	c.query = query
 }
 
+// parseQuery is pretty straight forward. Scan the query into tokens, set the the tokns
+// to the `parsedQuery` field on the client.
 func (c *Client) parseQuery() error {
 	tokens, err := scanQueryTokens(c.query)
 	if err != nil {
@@ -39,6 +41,9 @@ const Object = "object"
 // Array is a simple constant used throughout executeQuery for checking conditions
 const Array = "array"
 
+// executeQuery is called after the JSON and the query are parsed into their respective
+// tokens. We then iterate over the query tokens, and traverse our tree attempting to
+// find the result the user is looking for.
 func (c *Client) executeQuery() error {
 	rootVal := *c.program.RootValue
 	obj, _ := rootVal.(ast.Object)
@@ -55,6 +60,7 @@ func (c *Client) executeQuery() error {
 			c.setFinalValue(currentType, i, obj, arr)
 		}
 
+		// If the query token we're on is asking for an object
 		if c.parsedQuery[i].accessType == ObjectAccess {
 			if currentType != Object {
 				return fmt.Errorf("TODO: error")
@@ -81,7 +87,7 @@ func (c *Client) executeQuery() error {
 			if !found {
 				return fmt.Errorf("Sorry, could not find a key with that value. Key: %s", c.parsedQuery[i].keyReq)
 			}
-		} else {
+		} else { // If the query token we're on is asking for an array
 			if currentType != Array {
 				return fmt.Errorf("TODO: error")
 			}
@@ -111,20 +117,24 @@ func (c *Client) executeQuery() error {
 	return nil
 }
 
+// setFinalValue is called when we are on the final queryToken. It handles narrowing down what
+// needs to be returned and sets the result to the Client
 func (c *Client) setFinalValue(currentType string, index int, obj ast.Object, arr ast.Array) {
 	if currentType == Object {
 		r := c.parsedQuery[index].keyReq
 		for _, v := range obj.Children {
 			if r == v.Key.Value {
 				c.setResultFromValue(v.Value)
+				break
 			}
 		}
-	} else {
-		ind := c.parsedQuery[index].indexReq
-		c.setResultFromValue(arr.Children[ind])
+		return
 	}
+	ind := c.parsedQuery[index].indexReq
+	c.setResultFromValue(arr.Children[ind])
 }
 
+// setResultFromValue switches on an ast.Value type and assigns the appropriate result to the client
 func (c *Client) setResultFromValue(value ast.Value) {
 	switch val := value.(type) {
 	case ast.Literal:
@@ -136,6 +146,8 @@ func (c *Client) setResultFromValue(value ast.Value) {
 	}
 }
 
+// setResultFromLiteral is very similar to setResultFromValue, except it we know the value we're switching over
+// must be a Literal, meaning the assigned result will either be a string, number, boolean, or null
 func (c *Client) setResultFromLiteral(value ast.Value) {
 	switch lit := value.(type) {
 	case string:
@@ -149,6 +161,7 @@ func (c *Client) setResultFromLiteral(value ast.Value) {
 	}
 }
 
+// validateQueryRoot handles some very simple validation around the root of the query
 func validateQueryRoot(query string, rootNodeType ast.RootNodeType) error {
 	if query[0] != '$' {
 		return ErrNoDollarSignRoot

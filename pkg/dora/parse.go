@@ -73,13 +73,14 @@ func scanQueryTokens(query []rune) ([]queryToken, error) {
 	return qts, nil
 }
 
+// parseObjSelector consumes the property key, sets the `jump` index to right after it, and returns the sliced chunk.
 func parseObjSelector(queryChunk []rune) ([]rune, int, bool, error) {
 	var jump int
 	var isIndex bool
 	queryLen := len(queryChunk)
 
-	// Consume the key name
 	if isPropertyKey(queryChunk[jump]) {
+		// Consume the property key name and increment the jump to point to after the property key
 		for isPropertyKey(queryChunk[jump]) && jump < queryLen-1 {
 			jump++
 		}
@@ -102,12 +103,13 @@ func parseObjSelector(queryChunk []rune) ([]rune, int, bool, error) {
 	)
 }
 
+// parseArraySelector consumes the array index request, sets the `jump` index to right after it, and returns the sliced chunk.
 func parseArraySelector(queryChunk []rune) ([]rune, int, error) {
 	var jump int
 	queryLen := len(queryChunk)
 
-	// Consume the index and return it along with the jump
 	if isNumber(queryChunk[jump]) {
+		// Consume the index and return it along with the jump
 		for isNumber(queryChunk[jump]) && jump < queryLen-1 {
 			jump++
 		}
