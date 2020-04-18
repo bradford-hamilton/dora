@@ -36,7 +36,9 @@ go get github.com/bradford-hamilton/dora/pkg/dora
 
 ## Usage
 ```go
-c, err := dora.NewFromString("{\"someObj\": [1, { \"neatKey\": \"neatVal\" }, true] }")
+var exampleJSON = `{ "someObj": [1, { "neatKey": "neatVal" }, true] }`
+
+c, err := dora.NewFromString(exampleJSON)
 if err != nil {
   fmt.Printf("\nError creating client: %v\n", err)
 }
@@ -116,11 +118,6 @@ Contributions, issues and feature requests are welcome!<br />Feel free to check 
 ## Show your support
 
 Give a ⭐️ if this project helped you!
-
-## Credit
-Started playing with this idea after finding:
-1. [jsonparser](https://github.com/buger/jsonparser)
-2. [ast-explorer](https://astexplorer.net)
 
 ***
 ##### _This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
