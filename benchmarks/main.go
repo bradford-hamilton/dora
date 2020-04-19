@@ -8,26 +8,48 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/dora"
 )
 
-// benchmarkGetSingleValueWithDora 6953 ns/op
-// MemAllocs: 					   18475087
-// MemBytes: 					   726808072
+// benchmarkGetSingleValueWithDora 7175 ns/op
+// MemAllocs: 17440028
+// MemBytes: 678406512
 
-// benchmarkisGetSingleValueByUnmarshal 2845 ns/op
-// MemAllocs: 					   6224052
-// MemBytes: 					   391700928
+// benchmarkisGetSingleValueWithUnmarshalAndNoSchema 5234 ns/op
+// MemAllocs: 12724137
+// MemBytes: 790109456
 
-// Right now dora seems to be around 2-3x slower then unmarshal
+// benchmarkisGetSingleValueWithUnmarshalAndSchema 2975 ns/op
+// MemAllocs: 5744389
+// MemBytes: 361514088
+
+// Dora's stats against unmarhsalling into an unknown interface{}:
+// 		- Around 1.5x slower
+// 		- Uses slightly less MemBytes
+// 		- Uses slightly more MemAllocs
+
+// Dora's stats against unmarhsalling into a known shape (testJSON struct):
+// 		- Around 2-3x slower
+// 		- Around 2-3x more MemBytes
+// 		- Around 2-3x more  MemAllocs
 
 func main() {
 	res := testing.Benchmark(benchmarkGetSingleValueWithDora)
-	fmt.Printf("%s\n%#[1]v\n", res)
 	fmt.Println("benchmarkGetSingleValueWithDora")
+	fmt.Printf("%s\n%#[1]v\n", res)
 	fmt.Printf("MemAllocs: %d\n", res.MemAllocs)
 	fmt.Printf("MemBytes: %d\n", res.MemBytes)
 
-	res = testing.Benchmark(benchmarkisGetSingleValueByUnmarshal)
+	fmt.Print("\n")
+
+	res = testing.Benchmark(benchmarkisGetSingleValueWithUnmarshalAndNoSchema)
+	fmt.Println("benchmarkisGetSingleValueWithUnmarshalAndNoSchema")
 	fmt.Printf("%s\n%#[1]v\n", res)
-	fmt.Println("benchmarkisGetSingleValueByUnmarshal")
+	fmt.Printf("MemAllocs: %d\n", res.MemAllocs)
+	fmt.Printf("MemBytes: %d\n", res.MemBytes)
+
+	fmt.Print("\n")
+
+	res = testing.Benchmark(benchmarkisGetSingleValueWithUnmarshalAndSchema)
+	fmt.Println("benchmarkisGetSingleValueWithUnmarshalAndSchema")
+	fmt.Printf("%s\n%#[1]v\n", res)
 	fmt.Printf("MemAllocs: %d\n", res.MemAllocs)
 	fmt.Printf("MemBytes: %d\n", res.MemBytes)
 }
@@ -41,9 +63,16 @@ func benchmarkGetSingleValueWithDora(b *testing.B) {
 	}
 }
 
-func benchmarkisGetSingleValueByUnmarshal(b *testing.B) {
+func benchmarkisGetSingleValueWithUnmarshalAndSchema(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		v := getSingleValueWithUnmarshal()
+		v := getSingleValueWithUnmarshalAndSchema()
+		result = v
+	}
+}
+
+func benchmarkisGetSingleValueWithUnmarshalAndNoSchema(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		v := getSingleValueWithUnmarshalNoSchema()
 		result = v
 	}
 }
@@ -54,7 +83,7 @@ func getSingleValueWithDora() string {
 	return r
 }
 
-func getSingleValueWithUnmarshal() string {
+func getSingleValueWithUnmarshalAndSchema() string {
 	type testJSON struct {
 		Item1 []struct {
 			Some struct {
@@ -65,6 +94,22 @@ func getSingleValueWithUnmarshal() string {
 	var tj testJSON
 	json.Unmarshal([]byte(testJSONObject), &tj)
 	return tj.Item1[2].Some.Thing
+}
+
+func getSingleValueWithUnmarshalNoSchema() string {
+	var rootMap map[string]interface{}
+	json.Unmarshal([]byte(testJSONObject), &rootMap)
+	v, _ := rootMap["item1"]
+	switch val := v.(type) {
+	case []interface{}:
+		thing := val[2]
+		m := thing.(map[string]interface{})
+		t, _ := m["some"]
+		thing2 := t.(map[string]interface{})
+		f, _ := thing2["thing"]
+		return f.(string)
+	}
+	return ""
 }
 
 const testJSONObject = `{
