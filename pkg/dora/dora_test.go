@@ -75,7 +75,92 @@ func TestScanQueryTokens(t *testing.T) {
 	}
 }
 
-func TestGetByPath(t *testing.T) {
+//func TestGetByPath(t *testing.T) {
+//	testJSON := `
+//{
+//	"data": {
+//		"users": [{
+//			"first_name": "bradford",
+//			"last_name": "human",
+//			"email": "brad@example.com",
+//			"confirmed": true,
+//			"allergies": null,
+//			"age": 30,
+//			"random_items": [true, { "dog_name": "ellie" }]
+//		}]
+//	},
+//	"codes": [200, 201, 400, 403, 404],
+//	"superNest": {
+//		"inner1": {
+//			"inner2": {
+//				"inner3": {
+//					"inner4": [{ "inner5": { "inner6": "neato" } }]
+//				}
+//			}
+//		}
+//	}
+//}`
+//	tests := []struct {
+//		query          string
+//		expectedResult string
+//	}{
+//		{
+//			"$.data.users[0].first_name",
+//			"bradford",
+//		},
+//		{
+//			"$.data.users[0].confirmed",
+//			"true",
+//		},
+//		{
+//			"$.data.users[0].allergies",
+//			"null",
+//		},
+//		{
+//			"$.data.users[0].age",
+//			"30",
+//		},
+//		{
+//			"$.data.users[0].random_items",
+//			"[true, { \"dog_name\": \"ellie\" }]",
+//		},
+//		{
+//			"$.data.users[0].random_items[1]",
+//			"{ \"dog_name\": \"ellie\" }",
+//		},
+//		{
+//			"$.codes",
+//			"[200, 201, 400, 403, 404]",
+//		},
+//		{
+//			"$.codes[1]",
+//			"201",
+//		},
+//		{
+//			"$.superNest.inner1.inner2.inner3.inner4[0].inner5.inner6",
+//			"neato",
+//		},
+//	}
+//
+//	for _, tt := range tests {
+//		c, err := NewFromString(testJSON)
+//		if err != nil {
+//			t.Fatalf("\nError creating client: %v\n", err)
+//		}
+//
+//		result, err := c.GetByPath(tt.query)
+//		if err != nil {
+//			fmt.Println(err)
+//		}
+//
+//		if result != tt.expectedResult {
+//			t.Fatalf("Expected result type of %s, got: %s", tt.expectedResult, result)
+//		}
+//	}
+//}
+
+
+func TestSetByPath(t *testing.T) {
 	testJSON := `
 {
 	"data": {
@@ -105,38 +190,6 @@ func TestGetByPath(t *testing.T) {
 		expectedResult string
 	}{
 		{
-			"$.data.users[0].first_name",
-			"bradford",
-		},
-		{
-			"$.data.users[0].confirmed",
-			"true",
-		},
-		{
-			"$.data.users[0].allergies",
-			"null",
-		},
-		{
-			"$.data.users[0].age",
-			"30",
-		},
-		{
-			"$.data.users[0].random_items",
-			"[true, { \"dog_name\": \"ellie\" }]",
-		},
-		{
-			"$.data.users[0].random_items[1]",
-			"{ \"dog_name\": \"ellie\" }",
-		},
-		{
-			"$.codes",
-			"[200, 201, 400, 403, 404]",
-		},
-		{
-			"$.codes[1]",
-			"201",
-		},
-		{
 			"$.superNest.inner1.inner2.inner3.inner4[0].inner5.inner6",
 			"neato",
 		},
@@ -148,13 +201,14 @@ func TestGetByPath(t *testing.T) {
 			t.Fatalf("\nError creating client: %v\n", err)
 		}
 
-		result, err := c.GetByPath(tt.query)
+		err = c.SetByPath(tt.query, "neato")
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		if result != tt.expectedResult {
-			t.Fatalf("Expected result type of %s, got: %s", tt.expectedResult, result)
-		}
+		//
+		//if result != tt.expectedResult {
+		//	t.Fatalf("Expected result type of %s, got: %s", tt.expectedResult, result)
+		//}
 	}
 }
+

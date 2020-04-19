@@ -2,6 +2,7 @@
 package dora
 
 import (
+	"fmt"
 	"github.com/bradford-hamilton/dora/pkg/ast"
 	"github.com/bradford-hamilton/dora/pkg/lexer"
 	"github.com/bradford-hamilton/dora/pkg/parser"
@@ -45,4 +46,20 @@ func (c *Client) GetByPath(query string) (string, error) {
 		return "", err
 	}
 	return c.result, nil
+}
+
+func (c *Client) SetByPath(cursor string, val interface{}) error {
+	result, err := c.GetByPath(cursor)
+	if err != nil {
+		return fmt.Errorf("error not able to walk path provided by cursor: %w", err)
+	}
+
+	if result == val {
+		return nil
+	}
+
+	// TODO: update val
+	//c.tree.RootValue = val
+	fmt.Printf("%+v\n", c.tree)
+	return nil
 }
