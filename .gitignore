@@ -13,3 +13,6 @@
 
 # vs-code specific settings, for delve debugger in this case
 .vscode
+
+# goreleaser folder
+dist/
