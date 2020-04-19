@@ -60,47 +60,35 @@ type Identifier struct {
 // it represents any JSON value (object | array | boolean | string | number | null)
 type Value interface{}
 
-// Available object states for use in parsing
+// state is a type alias for int and used to create the available value states below
+type state int
+
+// Available states for each type used in parsing
 const (
-	ObjStart objectState = iota
+	// Object states
+	ObjStart state = iota
 	ObjOpen
 	ObjProperty
 	ObjComma
-)
 
-type objectState int
-
-// Available property states for use in parsing
-const (
-	PropertyStart propertyState = iota
+	// Property states
+	PropertyStart
 	PropertyKey
 	PropertyColon
-)
 
-type propertyState int
-
-// Available array states for use in parsing
-const (
-	ArrayStart arrayState = iota
+	// Array states
+	ArrayStart
 	ArrayOpen
 	ArrayValue
 	ArrayComma
-)
 
-type arrayState int
-
-// Available string states for use in parsing
-const (
-	StringStart stringState = iota
+	// String states
+	StringStart
 	StringQuoteOrChar
 	Escape
-)
 
-type stringState int
-
-// Available number states for use in parsing
-const (
-	NumberStart numberState = iota
+	// Number states
+	NumberStart
 	NumberMinus
 	NumberZero
 	NumberDigit
@@ -109,5 +97,3 @@ const (
 	NumberExp
 	NumberExpDigitOrSign
 )
-
-type numberState int
