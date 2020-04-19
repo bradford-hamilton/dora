@@ -99,15 +99,13 @@ func getSingleValueWithUnmarshalAndSchema() string {
 func getSingleValueWithUnmarshalNoSchema() string {
 	var rootMap map[string]interface{}
 	json.Unmarshal([]byte(testJSONObject), &rootMap)
-	v, _ := rootMap["item1"]
-	switch val := v.(type) {
+	itemOne, _ := rootMap["item1"]
+	switch val := itemOne.(type) {
 	case []interface{}:
-		thing := val[2]
-		m := thing.(map[string]interface{})
-		t, _ := m["some"]
-		thing2 := t.(map[string]interface{})
-		f, _ := thing2["thing"]
-		return f.(string)
+		obj := val[2].(map[string]interface{})
+		obj2, _ := obj["some"].(map[string]interface{})
+		thing, _ := obj2["thing"].(string)
+		return thing
 	}
 	return ""
 }
