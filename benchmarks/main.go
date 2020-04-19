@@ -32,15 +32,19 @@ func main() {
 	fmt.Printf("MemBytes: %d\n", res.MemBytes)
 }
 
+var result string
+
 func benchmarkGetSingleValueWithDora(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = getSingleValueWithDora()
+		v := getSingleValueWithDora()
+		result = v
 	}
 }
 
 func benchmarkisGetSingleValueByUnmarshal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = getSingleValueWithUnmarshal()
+		v := getSingleValueWithUnmarshal()
+		result = v
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 
 // prepareQuery validates the query root, sets the query on the client struct, and parses the query.
 func (c *Client) prepareQuery(query string, rootNodeType ast.RootNodeType) error {
-	if err := validateQueryRoot(query, c.program.Type); err != nil {
+	if err := validateQueryRoot(query, c.tree.Type); err != nil {
 		return err
 	}
 	c.setQuery([]rune(query))
@@ -45,7 +45,7 @@ const Array = "array"
 // tokens. We then iterate over the query tokens, and traverse our tree attempting to
 // find the result the user is looking for.
 func (c *Client) executeQuery() error {
-	rootVal := *c.program.RootValue
+	rootVal := *c.tree.RootValue
 	obj, _ := rootVal.(ast.Object)
 	arr, ok := rootVal.(ast.Array)
 	currentType := Object

@@ -33,9 +33,9 @@ func New(l *lexer.Lexer) *Parser {
 	return p
 }
 
-// ParseProgram parses tokens and creates an AST. It returns the RootNode
+// ParseJSON parses tokens and creates an AST. It returns the RootNode
 // which holds a slice of Values (and in turn, the rest of the tree)
-func (p *Parser) ParseProgram() (ast.RootNode, error) {
+func (p *Parser) ParseJSON() (ast.RootNode, error) {
 	var rootNode ast.RootNode
 	if p.currentTokenTypeIs(token.LeftBracket) {
 		rootNode.Type = ast.ArrayRoot

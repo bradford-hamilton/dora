@@ -23,7 +23,7 @@ func TestParsingJSONObjectChildren(t *testing.T) {
 	for _, tt := range tests {
 		l := lexer.New(tt.input)
 		p := New(l)
-		program, err := p.ParseProgram()
+		program, err := p.ParseJSON()
 		if err != nil {
 			t.Fatalf("Failed to parse program. Error: %v", err)
 		}
@@ -54,7 +54,7 @@ func TestParsingJSONArrayChildren(t *testing.T) {
 	for _, tt := range tests {
 		l := lexer.New(tt.input)
 		p := New(l)
-		program, err := p.ParseProgram()
+		program, err := p.ParseJSON()
 		if err != nil {
 			t.Fatalf("Failed to parse program. Error: %v", err)
 		}
