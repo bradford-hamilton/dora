@@ -50,7 +50,7 @@ func benchmarkisGetSingleValueByUnmarshal(b *testing.B) {
 
 func getSingleValueWithDora() string {
 	c, _ := dora.NewFromString(testJSONObject)
-	r, _ := c.GetByPath("$.item1[2].some.thing")
+	r, _ := c.Get("$.item1[2].some.thing")
 	return r
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/ast"
 	"github.com/bradford-hamilton/dora/pkg/lexer"
 	"github.com/bradford-hamilton/dora/pkg/parser"
+	"github.com/spf13/cast"
 )
 
 // Client represents a dora client. The client holds things like a copy of the input, the tree (the
@@ -37,29 +38,51 @@ func NewFromBytes(bytes []byte) (*Client, error) {
 	return NewFromString(string(bytes))
 }
 
-// GetByPath takes a dora query, prepares and validates it, executes the query, and returns the result or an error.
-func (c *Client) GetByPath(query string) (string, error) {
+func (c *Client) preflight(query string) error {
 	if err := c.prepareQuery(query, c.tree.Type); err != nil {
-		return "", err
+		return err
 	}
 	if err := c.executeQuery(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Get takes a dora query, prepares and validates it, executes the query, and returns the result or an error.
+func (c *Client) Get(query string) (string, error) {
+	if err := c.preflight(query); err != nil {
 		return "", err
 	}
 	return c.result, nil
 }
 
-func (c *Client) SetByPath(cursor string, val interface{}) error {
-	result, err := c.GetByPath(cursor)
-	if err != nil {
+func (c *Client) Set(cursor string, val string) error {
+	if err := c.preflight(cursor); err != nil {
 		return fmt.Errorf("error not able to walk path provided by cursor: %w", err)
 	}
 
-	if result == val {
+	if c.result == val {
 		return nil
 	}
 
-	// TODO: update val
-	//c.tree.RootValue = val
-	fmt.Printf("%+v\n", c.tree)
+	c.result = val
+
 	return nil
 }
+
+// inspired by viper.Get<T>() implementation
+func (c *Client) GetString(cursor string) string {
+	result, err := c.Get(cursor)
+	if err != nil {
+		return ""
+	}
+
+	return cast.ToString(result)
+}
+
+// TODO: implement GetBool()
+// TODO: implement GetFloat64(), JSON's only number type
+// TODO: implement GetArray() or maybe Slice{} ?
+// TODO: implement GetObject() or maybe Struct{} ?
+// TODO: implement GetNull() ? for completeness ?
