@@ -28,7 +28,9 @@ const TestJSON = `
 			}
 		}
 	},
-    "date" : "04/19/2020"
+    "date": "04/19/2020",
+    "enabled": true,
+    "PI": 3.1415
 }`
 
 func TestScanQueryTokens(t *testing.T) {
@@ -161,35 +163,83 @@ func TestGet(t *testing.T) {
 	}
 }
 
-func TestSet(t *testing.T) {
+func TestClient_GetString(t *testing.T) {
 	tests := []struct {
 		query          string
-		expectedResult interface{}
+		expectedResult string
 	}{
 		{
-			"$.date",
-			"04/20/2020",
+			query:          "$.date",
+			expectedResult: "04/19/2020",
 		},
 	}
-
 	for _, tt := range tests {
 		c, err := NewFromString(TestJSON)
 		if err != nil {
 			t.Fatalf("\nError creating client: %v\n", err)
 		}
 
-		err = c.Set(tt.query, "04/20/2020")
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		result, err := c.Get(tt.query)
+		result := c.GetString(tt.query)
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		if result != tt.expectedResult {
 			t.Fatalf("Expected result type of %s, got: %s", tt.expectedResult, result)
+		}
+	}
+}
+
+func TestClient_GetBool(t *testing.T) {
+	tests := []struct {
+		query          string
+		expectedResult bool
+	}{
+		{
+			query:          "$.enabled",
+			expectedResult: true,
+		},
+	}
+	for _, tt := range tests {
+		c, err := NewFromString(TestJSON)
+		if err != nil {
+			t.Fatalf("\nError creating client: %v\n", err)
+		}
+
+		result := c.GetBool(tt.query)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if result != tt.expectedResult {
+			t.Fatalf("Expected result type of %T, got: %T", tt.expectedResult, result)
+		}
+	}
+}
+
+func TestClient_GetFloat64(t *testing.T) {
+	tests := []struct {
+		query          string
+		expectedResult float64
+	}{
+		{
+			query:          "$.PI",
+			expectedResult: 3.1415,
+		},
+	}
+	for _, tt := range tests {
+		c, err := NewFromString(TestJSON)
+		if err != nil {
+			t.Fatalf("\nError creating client: %v\n", err)
+		}
+
+		result := c.GetFloat64(tt.query)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if result != tt.expectedResult {
+			t.Fatalf("Expected result type of %f, got: %f", tt.expectedResult, result)
 		}
 	}
 }
