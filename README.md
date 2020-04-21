@@ -27,8 +27,7 @@
 > Dora makes exploring JSON fast, painless, and elegant.
 
 ### **_NOTE_**:
-- dora is currently a WIP and the main focus is for teaching the content through a [medium blog post](https://medium.com/@bradford_hamilton/building-a-json-parser-and-query-tool-with-go-8790beee239a). In other words, dora is a long way out from being a tool I'd actually want to use in Go. It will likely stay that way, unless there turns out to be any interest and the community wants to contribute. In that case this could turn into a real tool pretty quickly. Some thoughts on getting there:
-    - The first thing we would want to focus on would be speed and memory consumption. Both are currently unnaccpetable.
+- dora is currently an early WIP and the main focus was for teaching the content through a [medium blog post](https://medium.com/@bradford_hamilton/building-a-json-parser-and-query-tool-with-go-8790beee239a). In other words, dora is a ways out from being a stable tool.
 
 ## Install
 
@@ -115,7 +114,7 @@ go test ./...
 
 ## 🤝 Contributing
 
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/bradford-hamilton/dora/pkg/issues). 
+Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/bradford-hamilton/dora/issues). 
 
 ## Show your support
 

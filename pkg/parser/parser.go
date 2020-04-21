@@ -276,12 +276,7 @@ func (p *Parser) peekTokenTypeIs(t token.Type) bool {
 
 // peekError is a small wrapper to add a peek error to our parser's errors field.
 func (p *Parser) peekError(t token.Type) {
-	msg := fmt.Sprintf(
-		"Line: %d: Expected next token to be %s, got: %s instead",
-		p.currentToken.Line,
-		t,
-		p.peekToken.Type,
-	)
+	msg := fmt.Sprintf("Line: %d: Expected next token to be %s, got: %s instead", p.currentToken.Line, t, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
 }
 
