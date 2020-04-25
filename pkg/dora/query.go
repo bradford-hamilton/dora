@@ -46,6 +46,14 @@ func (c *Client) parseQuery() error {
 	return nil
 }
 
+// Get takes a dora query, prepares and validates it, executes the query, and returns the result or an error.
+func (c *Client) get(query string) (string, error) {
+	if err := c.prepAndExecQuery(query); err != nil {
+		return "", err
+	}
+	return c.result, nil
+}
+
 // Object is a simple constant used throughout executeQuery for checking conditions
 const Object = "object"
 

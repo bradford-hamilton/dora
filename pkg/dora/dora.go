@@ -38,14 +38,6 @@ func NewFromBytes(bytes []byte) (*Client, error) {
 	return NewFromString(string(bytes))
 }
 
-// Get takes a dora query, prepares and validates it, executes the query, and returns the result or an error.
-func (c *Client) get(query string) (string, error) {
-	if err := c.prepAndExecQuery(query); err != nil {
-		return "", err
-	}
-	return c.result, nil
-}
-
 // GetString wraps a call to `get` and returns the result as a string
 func (c *Client) GetString(query string) (string, error) {
 	result, err := c.get(query)

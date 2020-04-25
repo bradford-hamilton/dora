@@ -9,39 +9,33 @@ import (
 
 // Notes:
 // Since you can iterpolate at the call site, going to start with _only_ dot notation for object and bracket notation for arrays
-// For now I've whipped up a much more juvenile parser for the queries because it doesn't need to do much right now
+// For now I've whipped up a much more juvenile parser for the queries because it doesn't need to do a whole lot
 
-// Currently using main as my own testing ground as if dora was 3rd party
+// Currently using main as an example to follow
 func main() {
-	c, err := dora.NewFromString(testJSONObject)
+	var exampleJSON = `{ "string": "a neat string", "bool": true, "PI": 3.14159 }`
+
+	c, err := dora.NewFromString(exampleJSON)
 	if err != nil {
 		fmt.Printf("\nError creating client: %v\n", err)
 	}
 
-	result, err := c.GetString("$.item1[2].some")
+	str, err := c.GetString("$.string")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Println(result)
-}
-
-const testJSONArray = `[
-	"item1",
-	"item2",
-	{"item3": "item3value", "item4": {"innerkey": "innervalue"}},
-	["item1", ["array"]]
-]`
-
-const testJSONObject = `{
-	"item1": ["aryitem1", "aryitem2", {"some": {"thing": "coolObj"}}],
-	"item2": "simplestringvalue",
-	"item3": {
-		"item4": {
-			"item5": {
-				"item6": ["thing1", 2],
-				"item7": {"reallyinnerobjkey": {"is": "anobject"}}
-			}
-		}
+	boolean, err := c.GetBool("$.bool")
+	if err != nil {
+		fmt.Println(err)
 	}
-}`
+
+	float, err := c.GetFloat64("$.PI")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(str)     // a neat string
+	fmt.Println(boolean) // true
+	fmt.Println(float)   // 3.14159
+}

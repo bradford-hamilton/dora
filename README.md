@@ -38,25 +38,50 @@ go get github.com/bradford-hamilton/dora/pkg/dora
 
 ## Usage
 ```go
-var exampleJSON = `{ "someObj": [1, { "neatKey": "neatVal" }, true] }`
+var exampleJSON = `{ "string": "a neat string", "bool": true, "PI": 3.14159 }`
 
 c, err := dora.NewFromString(exampleJSON)
 if err != nil {
   fmt.Printf("\nError creating client: %v\n", err)
 }
 
-result, err := c.GetByPath("$.someObj[1].neatKey") // result == "neatVal"
+str, err := c.GetString("$.string")
 if err != nil {
-  fmt.Printf("\nError executing GetByPath query: %v\n", err)
+  fmt.Println(err)
 }
+
+boolean, err := c.GetBool("$.bool")
+if err != nil {
+  fmt.Println(err)
+}
+
+float, err := c.GetFloat64("$.PI")
+if err != nil {
+  fmt.Println(err)
+}
+
+fmt.Println(str)     // a neat string
+fmt.Println(boolean) // true
+fmt.Println(float)   // 3.14159
 ```
 
 ## Query Syntax
 
 1. All queries start with `$`.
-2. Access objects with `.` only, no support for object access with bracket notation `[]`
+
+2. Access objects with `.` only, no support for object access with bracket notation `[]`.
     - This is intentional, as you can interpolate at the call site, so there is no reason to offer two syntaxes that do the same thing.
-3. Access arrays by index with bracket notation `[]`
+
+3. Access arrays by index with bracket notation `[]`.
+
+4. **New**: Fetch by type to allow caller to ask for the proper Go type. For the time being, asking for objects or arrays in their entirety must be done through `GetString` which will return the chunk of JSON.
+    
+    Current API:
+    - `GetString`
+    - `GetFloat64`
+    - `GetBool`
+
+5. Next feature will be approaching this either with some sort of serialization option maybe similar to stdlib or a simpler one with no options that returns a struct or slice.
 
  Example with a JSON object as root value:
 ```js
