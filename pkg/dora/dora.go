@@ -2,10 +2,11 @@
 package dora
 
 import (
+	"strconv"
+
 	"github.com/bradford-hamilton/dora/pkg/ast"
 	"github.com/bradford-hamilton/dora/pkg/lexer"
 	"github.com/bradford-hamilton/dora/pkg/parser"
-	"strconv"
 )
 
 // Client represents a dora client. The client holds things like a copy of the input, the tree (the
@@ -37,57 +38,45 @@ func NewFromBytes(bytes []byte) (*Client, error) {
 	return NewFromString(string(bytes))
 }
 
-// prepAndExecQuery prepares and executes a passed in query
-func (c *Client) prepAndExecQuery(query string) error {
-	if err := c.prepareQuery(query, c.tree.Type); err != nil {
-		return err
-	}
-
-	if err := c.executeQuery(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Get takes a dora query, prepares and validates it, executes the query, and returns the result or an error.
-func (c *Client) Get(query string) (string, error) {
+func (c *Client) get(query string) (string, error) {
 	if err := c.prepAndExecQuery(query); err != nil {
 		return "", err
 	}
-
 	return c.result, nil
 }
 
-// inspired by viper.Get<T>() implementation
-func (c *Client) GetString(query string) string {
-	result, err := c.Get(query)
+// GetString wraps a call to `get` and returns the result as a string
+func (c *Client) GetString(query string) (string, error) {
+	result, err := c.get(query)
 	if err != nil {
-		return ""
+		return "", err
 	}
-
-	return result
+	return result, nil
 }
 
-func (c *Client) GetBool(query string) bool {
-	result, err := c.Get(query)
+// GetBool wraps a call to `get` and returns the result as a bool
+func (c *Client) GetBool(query string) (bool, error) {
+	result, err := c.get(query)
 	if err != nil {
-		return false
+		return false, err
 	}
-
-	s, _ := strconv.ParseBool(result)
-	return s
+	s, err := strconv.ParseBool(result)
+	if err != nil {
+		return false, err
+	}
+	return s, nil
 }
 
-func (c *Client) GetFloat64(query string) float64 {
-	result, err := c.Get(query)
+// GetFloat64 wraps a call to `get` and returns the result as a float64 (JSONs only number type)
+func (c *Client) GetFloat64(query string) (float64, error) {
+	result, err := c.get(query)
 	if err != nil {
-		return 0.0
+		return 0.0, err
 	}
-
-	s, _ := strconv.ParseFloat(result, 64)
-	return s
+	f, err := strconv.ParseFloat(result, 64)
+	if err != nil {
+		return 0.0, err
+	}
+	return f, nil
 }
-
-// TODO: implement GetArray() or maybe Slice{} ?
-// TODO: implement GetObject() or maybe Struct{} ?

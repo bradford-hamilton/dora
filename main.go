@@ -18,7 +18,7 @@ func main() {
 		fmt.Printf("\nError creating client: %v\n", err)
 	}
 
-	result, err := c.Get("$.item1[2].some")
+	result, err := c.GetString("$.item1[2].some")
 	if err != nil {
 		fmt.Println(err)
 	}

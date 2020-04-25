@@ -8,6 +8,17 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/ast"
 )
 
+// prepAndExecQuery prepares and executes a passed in query
+func (c *Client) prepAndExecQuery(query string) error {
+	if err := c.prepareQuery(query, c.tree.Type); err != nil {
+		return err
+	}
+	if err := c.executeQuery(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // prepareQuery validates the query root, sets the query on the client struct, and parses the query.
 func (c *Client) prepareQuery(query string, rootNodeType ast.RootNodeType) error {
 	if err := validateQueryRoot(query, c.tree.Type); err != nil {
@@ -153,7 +164,7 @@ func (c *Client) setResultFromLiteral(value ast.Value) {
 	case string:
 		c.result = lit
 	case float64:
-		c.result = strconv.FormatFloat(lit, 'E', -1, 64)
+		c.result = fmt.Sprintf("%f", lit)
 	case int:
 		c.result = strconv.Itoa(lit)
 	case bool:

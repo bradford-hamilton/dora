@@ -30,7 +30,8 @@ const TestJSON = `
 	},
     "date": "04/19/2020",
     "enabled": true,
-    "PI": 3.1415
+	"PI": 3.1415,
+	"disabled": false
 }`
 
 func TestScanQueryTokens(t *testing.T) {
@@ -103,7 +104,7 @@ func TestScanQueryTokens(t *testing.T) {
 	}
 }
 
-func TestGet(t *testing.T) {
+func TestGetString(t *testing.T) {
 	tests := []struct {
 		query          string
 		expectedResult string
@@ -122,7 +123,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			"$.data.users[0].age",
-			"30",
+			"30.000000",
 		},
 		{
 			"$.data.users[0].random_items",
@@ -138,48 +139,25 @@ func TestGet(t *testing.T) {
 		},
 		{
 			"$.codes[1]",
-			"201",
+			"201.000000",
 		},
 		{
 			"$.superNest.inner1.inner2.inner3.inner4[0].inner5.inner6",
 			"neato",
 		},
-	}
-
-	for _, tt := range tests {
-		c, err := NewFromString(TestJSON)
-		if err != nil {
-			t.Fatalf("\nError creating client: %v\n", err)
-		}
-
-		result, err := c.Get(tt.query)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		if result != tt.expectedResult {
-			t.Fatalf("Expected result type of %s, got: %s", tt.expectedResult, result)
-		}
-	}
-}
-
-func TestClient_GetString(t *testing.T) {
-	tests := []struct {
-		query          string
-		expectedResult string
-	}{
 		{
-			query:          "$.date",
-			expectedResult: "04/19/2020",
+			"$.date",
+			"04/19/2020",
 		},
 	}
+
 	for _, tt := range tests {
 		c, err := NewFromString(TestJSON)
 		if err != nil {
 			t.Fatalf("\nError creating client: %v\n", err)
 		}
 
-		result := c.GetString(tt.query)
+		result, err := c.GetString(tt.query)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -196,8 +174,12 @@ func TestClient_GetBool(t *testing.T) {
 		expectedResult bool
 	}{
 		{
-			query:          "$.enabled",
-			expectedResult: true,
+			"$.enabled",
+			true,
+		},
+		{
+			"$.disabled",
+			false,
 		},
 	}
 	for _, tt := range tests {
@@ -206,7 +188,7 @@ func TestClient_GetBool(t *testing.T) {
 			t.Fatalf("\nError creating client: %v\n", err)
 		}
 
-		result := c.GetBool(tt.query)
+		result, err := c.GetBool(tt.query)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -223,8 +205,8 @@ func TestClient_GetFloat64(t *testing.T) {
 		expectedResult float64
 	}{
 		{
-			query:          "$.PI",
-			expectedResult: 3.1415,
+			"$.PI",
+			3.1415,
 		},
 	}
 	for _, tt := range tests {
@@ -233,7 +215,7 @@ func TestClient_GetFloat64(t *testing.T) {
 			t.Fatalf("\nError creating client: %v\n", err)
 		}
 
-		result := c.GetFloat64(tt.query)
+		result, err := c.GetFloat64(tt.query)
 		if err != nil {
 			fmt.Println(err)
 		}

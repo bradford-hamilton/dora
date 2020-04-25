@@ -196,8 +196,14 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 		val.Value = p.parseString()
 		return val
 	case token.Number:
-		v, _ := strconv.Atoi(p.currentToken.Literal)
-		val.Value = v
+		ct := p.currentToken.Literal
+		f, err := strconv.ParseFloat(ct, 64)
+		if err != nil {
+			p.parseError("error parsing JSON number, incorrect syntax")
+			val.Value = ct
+			return val
+		}
+		val.Value = f
 		return val
 	case token.True:
 		val.Value = true
