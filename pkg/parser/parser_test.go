@@ -12,12 +12,12 @@ func TestParsingJSONObjectChildren(t *testing.T) {
 		input       string
 		childrenLen int
 	}{
-		{"{\"key0\": \"value0\"}", 1},
-		{"{\"key1\": \"value1\", \"key2\": \"value2\"}", 2},
-		{"{\"key3\": [\"value3\", \"value4\"]}", 1},
-		{"{\"key4\": [\"value5\", {\"key5\": \"value6\"}]}", 1},
-		{"{\"key5\":\" value7\", \"key6\": \"value7\"}", 2},
-		{"{\"key5\":\" value7\", \"key6\": \"value7\", \"key7\": \"value8\"}", 3},
+		{input: "{\"key0\": \"value0\"}", childrenLen: 1},
+		{input: "{\"key1\": \"value1\", \"key2\": \"value2\"}", childrenLen: 2},
+		{input: "{\"key3\": [\"value3\", \"value4\"]}", childrenLen: 1},
+		{input: "{\"key4\": [\"value5\", {\"key5\": \"value6\"}]}", childrenLen: 1},
+		{input: "{\"key5\":\" value7\", \"key6\": \"value7\"}", childrenLen: 2},
+		{input: "{\"key5\":\" value7\", \"key6\": \"value7\", \"key7\": \"value8\"}", childrenLen: 3},
 	}
 
 	for _, tt := range tests {
@@ -44,11 +44,11 @@ func TestParsingJSONArrayChildren(t *testing.T) {
 		input       string
 		childrenLen int
 	}{
-		{"[\"item1\"]", 1},
-		{"[\"item2\", \"item3\"]", 2},
-		{"[\"item4\", \"item5\", \"item6\"]", 3},
-		{"[\"item7\", \"item8\", {\"key1\": \"value1\"}]", 3},
-		{"[\"item9\", \"item10\", {\"key1\": \"value1\"}, \"item11\"]", 4},
+		{input: "[\"item1\"]", childrenLen: 1},
+		{input: "[\"item2\", \"item3\"]", childrenLen: 2},
+		{input: "[\"item4\", \"item5\", \"item6\"]", childrenLen: 3},
+		{input: "[\"item7\", \"item8\", {\"key1\": \"value1\"}]", childrenLen: 3},
+		{input: "[\"item9\", \"item10\", {\"key1\": \"value1\"}, \"item11\"]", childrenLen: 4},
 	}
 
 	for _, tt := range tests {

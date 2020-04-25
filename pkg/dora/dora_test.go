@@ -40,31 +40,31 @@ func TestScanQueryTokens(t *testing.T) {
 		expectedToken []queryToken
 	}{
 		{
-			[]rune("$.item1[2].innerKey"),
-			[]queryToken{
+			input: []rune("$.item1[2].innerKey"),
+			expectedToken: []queryToken{
 				{accessType: ObjectAccess, keyReq: "item1"},
 				{accessType: ArrayAccess, indexReq: 2},
 				{accessType: ObjectAccess, keyReq: "innerKey"},
 			},
 		},
 		{
-			[]rune("$[25].item3"),
-			[]queryToken{
+			input: []rune("$[25].item3"),
+			expectedToken: []queryToken{
 				{accessType: ArrayAccess, indexReq: 25},
 				{accessType: ObjectAccess, keyReq: "item3"},
 			},
 		},
 		{
-			[]rune("$[7].item4.innerKey"),
-			[]queryToken{
+			input: []rune("$[7].item4.innerKey"),
+			expectedToken: []queryToken{
 				{accessType: ArrayAccess, indexReq: 7},
 				{accessType: ObjectAccess, keyReq: "item4"},
 				{accessType: ObjectAccess, keyReq: "innerKey"},
 			},
 		},
 		{
-			[]rune("$.item1[2].innerKey.anotherValue"),
-			[]queryToken{
+			input: []rune("$.item1[2].innerKey.anotherValue"),
+			expectedToken: []queryToken{
 				{accessType: ObjectAccess, keyReq: "item1"},
 				{accessType: ArrayAccess, indexReq: 2},
 				{accessType: ObjectAccess, keyReq: "innerKey"},
@@ -72,8 +72,8 @@ func TestScanQueryTokens(t *testing.T) {
 			},
 		},
 		{
-			[]rune("$[0].item1[2].coolKey.neatValue[16]"),
-			[]queryToken{
+			input: []rune("$[0].item1[2].coolKey.neatValue[16]"),
+			expectedToken: []queryToken{
 				{accessType: ArrayAccess, indexReq: 0},
 				{accessType: ObjectAccess, keyReq: "item1"},
 				{accessType: ArrayAccess, indexReq: 2},
@@ -110,44 +110,44 @@ func TestGetString(t *testing.T) {
 		expectedResult string
 	}{
 		{
-			"$.data.users[0].first_name",
-			"bradford",
+			query:          "$.data.users[0].first_name",
+			expectedResult: "bradford",
 		},
 		{
-			"$.data.users[0].confirmed",
-			"true",
+			query:          "$.data.users[0].confirmed",
+			expectedResult: "true",
 		},
 		{
-			"$.data.users[0].allergies",
-			"null",
+			query:          "$.data.users[0].allergies",
+			expectedResult: "null",
 		},
 		{
-			"$.data.users[0].age",
-			"30.000000",
+			query:          "$.data.users[0].age",
+			expectedResult: "30.000000",
 		},
 		{
-			"$.data.users[0].random_items",
-			"[true, { \"dog_name\": \"ellie\" }]",
+			query:          "$.data.users[0].random_items",
+			expectedResult: "[true, { \"dog_name\": \"ellie\" }]",
 		},
 		{
-			"$.data.users[0].random_items[1]",
-			"{ \"dog_name\": \"ellie\" }",
+			query:          "$.data.users[0].random_items[1]",
+			expectedResult: "{ \"dog_name\": \"ellie\" }",
 		},
 		{
-			"$.codes",
-			"[200, 201, 400, 403, 404]",
+			query:          "$.codes",
+			expectedResult: "[200, 201, 400, 403, 404]",
 		},
 		{
-			"$.codes[1]",
-			"201.000000",
+			query:          "$.codes[1]",
+			expectedResult: "201.000000",
 		},
 		{
-			"$.superNest.inner1.inner2.inner3.inner4[0].inner5.inner6",
-			"neato",
+			query:          "$.superNest.inner1.inner2.inner3.inner4[0].inner5.inner6",
+			expectedResult: "neato",
 		},
 		{
-			"$.date",
-			"04/19/2020",
+			query:          "$.date",
+			expectedResult: "04/19/2020",
 		},
 	}
 
@@ -174,12 +174,12 @@ func TestClient_GetBool(t *testing.T) {
 		expectedResult bool
 	}{
 		{
-			"$.enabled",
-			true,
+			query:          "$.enabled",
+			expectedResult: true,
 		},
 		{
-			"$.disabled",
-			false,
+			query:          "$.disabled",
+			expectedResult: false,
 		},
 	}
 	for _, tt := range tests {
@@ -205,8 +205,8 @@ func TestClient_GetFloat64(t *testing.T) {
 		expectedResult float64
 	}{
 		{
-			"$.PI",
-			3.1415,
+			query:          "$.PI",
+			expectedResult: 3.1415,
 		},
 	}
 	for _, tt := range tests {
