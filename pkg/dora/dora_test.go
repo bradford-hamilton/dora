@@ -35,7 +35,7 @@ const TestJSON = `
 }`
 
 func TestScanQueryTokens(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		input         []rune
 		expectedToken []queryToken
 	}{
@@ -105,7 +105,7 @@ func TestScanQueryTokens(t *testing.T) {
 }
 
 func TestGetString(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		query          string
 		expectedResult string
 	}{
@@ -169,7 +169,7 @@ func TestGetString(t *testing.T) {
 }
 
 func TestClient_GetBool(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		query          string
 		expectedResult bool
 	}{
@@ -200,7 +200,7 @@ func TestClient_GetBool(t *testing.T) {
 }
 
 func TestClient_GetFloat64(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		query          string
 		expectedResult float64
 	}{

@@ -8,7 +8,7 @@ import (
 )
 
 func TestParsingJSONObjectChildren(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		input       string
 		childrenLen int
 	}{
@@ -40,7 +40,7 @@ func TestParsingJSONObjectChildren(t *testing.T) {
 }
 
 func TestParsingJSONArrayChildren(t *testing.T) {
-	tests := []struct {
+	tests := [...]struct {
 		input       string
 		childrenLen int
 	}{

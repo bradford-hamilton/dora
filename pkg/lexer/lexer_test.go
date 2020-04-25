@@ -30,7 +30,7 @@ func TestNextToken(t *testing.T) {
 	"escapeString": "I'm some \"string\" thats escaped"
 }`
 
-	tests := []struct {
+	tests := [...]struct {
 		expectedType    token.Type
 		expectedLiteral string
 		expectedLine    int
