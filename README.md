@@ -93,7 +93,9 @@ fmt.Println(float)   // 3.14159
       "innerKey2": "innerValue",
       "innerKey3": [{ "kindOfStuff": "neatStuff" }]
     }
-  }
+  },
+  "someBool": true,
+  "PI": 3.14159
 }
 
 $.name                                  == "bradford"
@@ -103,6 +105,8 @@ $.someArray[1]                          == "values"
 $.someArray[2]                          == error
 $.obj.innerKey.innerKey2                == "innerValue"
 $.obj.innerKey.innerKey3[0].kindOfStuff == "neatStuff"
+$.someBool                              == true
+$.PI                                    == 3.14159
 ```
 
  Example with a JSON array as root value:
