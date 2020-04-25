@@ -152,6 +152,8 @@ func (c *Client) setResultFromLiteral(value ast.Value) {
 	switch lit := value.(type) {
 	case string:
 		c.result = lit
+	case float64:
+		c.result = strconv.FormatFloat(lit, 'E', -1, 64)
 	case int:
 		c.result = strconv.Itoa(lit)
 	case bool:

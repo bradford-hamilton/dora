@@ -5,6 +5,7 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/ast"
 	"github.com/bradford-hamilton/dora/pkg/lexer"
 	"github.com/bradford-hamilton/dora/pkg/parser"
+	"strconv"
 )
 
 // Client represents a dora client. The client holds things like a copy of the input, the tree (the
@@ -36,13 +37,57 @@ func NewFromBytes(bytes []byte) (*Client, error) {
 	return NewFromString(string(bytes))
 }
 
-// GetByPath takes a dora query, prepares and validates it, executes the query, and returns the result or an error.
-func (c *Client) GetByPath(query string) (string, error) {
+// prepAndExecQuery prepares and executes a passed in query
+func (c *Client) prepAndExecQuery(query string) error {
 	if err := c.prepareQuery(query, c.tree.Type); err != nil {
-		return "", err
+		return err
 	}
+
 	if err := c.executeQuery(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Get takes a dora query, prepares and validates it, executes the query, and returns the result or an error.
+func (c *Client) Get(query string) (string, error) {
+	if err := c.prepAndExecQuery(query); err != nil {
 		return "", err
 	}
+
 	return c.result, nil
 }
+
+// inspired by viper.Get<T>() implementation
+func (c *Client) GetString(query string) string {
+	result, err := c.Get(query)
+	if err != nil {
+		return ""
+	}
+
+	return result
+}
+
+func (c *Client) GetBool(query string) bool {
+	result, err := c.Get(query)
+	if err != nil {
+		return false
+	}
+
+	s, _ := strconv.ParseBool(result)
+	return s
+}
+
+func (c *Client) GetFloat64(query string) float64 {
+	result, err := c.Get(query)
+	if err != nil {
+		return 0.0
+	}
+
+	s, _ := strconv.ParseFloat(result, 64)
+	return s
+}
+
+// TODO: implement GetArray() or maybe Slice{} ?
+// TODO: implement GetObject() or maybe Struct{} ?

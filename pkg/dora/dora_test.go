@@ -5,6 +5,34 @@ import (
 	"testing"
 )
 
+const TestJSON = `
+{
+	"data": {
+		"users": [{
+			"first_name": "bradford",
+			"last_name": "human",
+			"email": "brad@example.com",
+			"confirmed": true,
+			"allergies": null,
+			"age": 30,
+			"random_items": [true, { "dog_name": "ellie" }]
+		}]
+	},
+	"codes": [200, 201, 400, 403, 404],
+	"superNest": {
+		"inner1": {
+			"inner2": {
+				"inner3": {
+					"inner4": [{ "inner5": { "inner6": "neato" } }]
+				}
+			}
+		}
+	},
+    "date": "04/19/2020",
+    "enabled": true,
+    "PI": 3.1415
+}`
+
 func TestScanQueryTokens(t *testing.T) {
 	tests := []struct {
 		input         []rune
@@ -75,31 +103,7 @@ func TestScanQueryTokens(t *testing.T) {
 	}
 }
 
-func TestGetByPath(t *testing.T) {
-	testJSON := `
-{
-	"data": {
-		"users": [{
-			"first_name": "bradford",
-			"last_name": "human",
-			"email": "brad@example.com",
-			"confirmed": true,
-			"allergies": null,
-			"age": 30,
-			"random_items": [true, { "dog_name": "ellie" }]
-		}]
-	},
-	"codes": [200, 201, 400, 403, 404],
-	"superNest": {
-		"inner1": {
-			"inner2": {
-				"inner3": {
-					"inner4": [{ "inner5": { "inner6": "neato" } }]
-				}
-			}
-		}
-	}
-}`
+func TestGet(t *testing.T) {
 	tests := []struct {
 		query          string
 		expectedResult string
@@ -143,18 +147,99 @@ func TestGetByPath(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		c, err := NewFromString(testJSON)
+		c, err := NewFromString(TestJSON)
 		if err != nil {
 			t.Fatalf("\nError creating client: %v\n", err)
 		}
 
-		result, err := c.GetByPath(tt.query)
+		result, err := c.Get(tt.query)
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		if result != tt.expectedResult {
 			t.Fatalf("Expected result type of %s, got: %s", tt.expectedResult, result)
+		}
+	}
+}
+
+func TestClient_GetString(t *testing.T) {
+	tests := []struct {
+		query          string
+		expectedResult string
+	}{
+		{
+			query:          "$.date",
+			expectedResult: "04/19/2020",
+		},
+	}
+	for _, tt := range tests {
+		c, err := NewFromString(TestJSON)
+		if err != nil {
+			t.Fatalf("\nError creating client: %v\n", err)
+		}
+
+		result := c.GetString(tt.query)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if result != tt.expectedResult {
+			t.Fatalf("Expected result type of %s, got: %s", tt.expectedResult, result)
+		}
+	}
+}
+
+func TestClient_GetBool(t *testing.T) {
+	tests := []struct {
+		query          string
+		expectedResult bool
+	}{
+		{
+			query:          "$.enabled",
+			expectedResult: true,
+		},
+	}
+	for _, tt := range tests {
+		c, err := NewFromString(TestJSON)
+		if err != nil {
+			t.Fatalf("\nError creating client: %v\n", err)
+		}
+
+		result := c.GetBool(tt.query)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if result != tt.expectedResult {
+			t.Fatalf("Expected result type of %T, got: %T", tt.expectedResult, result)
+		}
+	}
+}
+
+func TestClient_GetFloat64(t *testing.T) {
+	tests := []struct {
+		query          string
+		expectedResult float64
+	}{
+		{
+			query:          "$.PI",
+			expectedResult: 3.1415,
+		},
+	}
+	for _, tt := range tests {
+		c, err := NewFromString(TestJSON)
+		if err != nil {
+			t.Fatalf("\nError creating client: %v\n", err)
+		}
+
+		result := c.GetFloat64(tt.query)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if result != tt.expectedResult {
+			t.Fatalf("Expected result type of %f, got: %f", tt.expectedResult, result)
 		}
 	}
 }
