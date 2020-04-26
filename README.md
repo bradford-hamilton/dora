@@ -85,6 +85,8 @@ fmt.Println(float)   // 3.14159
 
  Example with a JSON object as root value:
 ```js
+JSON:
+
 {
   "name": "bradford",
   "someArray": ["some", "values"]
@@ -97,6 +99,8 @@ fmt.Println(float)   // 3.14159
   "someBool": true,
   "PI": 3.14159
 }
+
+Query:                                  Result:
 
 $.name                                  == "bradford"
 $.someArray                             == "[\"array\", \"values\"]"
@@ -111,6 +115,8 @@ $.PI                                    == 3.14159
 
  Example with a JSON array as root value:
 ```js
+JSON:
+
 [
   "some",
   "values",
@@ -119,6 +125,8 @@ $.PI                                    == 3.14159
     "objKey2": [{ "catstack": "lampcat" }]
   }
 ]
+
+Query:                   Result:
 
 $[0]                     == "some"
 $[1]                     == "values"
