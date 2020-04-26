@@ -1,6 +1,7 @@
 package dora
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 )
@@ -18,7 +19,7 @@ const TestJSON = `
 			"random_items": [true, { "dog_name": "ellie" }]
 		}]
 	},
-	"codes": [200, 201, 400, 403, 404],
+	"codes": [200, 201, 400, 403, 404.567],
 	"superNest": {
 		"inner1": {
 			"inner2": {
@@ -104,7 +105,7 @@ func TestScanQueryTokens(t *testing.T) {
 	}
 }
 
-func TestGetString(t *testing.T) {
+func TestClient_GetString(t *testing.T) {
 	tests := [...]struct {
 		query          string
 		expectedResult string
@@ -135,7 +136,7 @@ func TestGetString(t *testing.T) {
 		},
 		{
 			query:          "$.codes",
-			expectedResult: "[200, 201, 400, 403, 404]",
+			expectedResult: "[200, 201, 400, 403, 404.567]",
 		},
 		{
 			query:          "$.codes[1]",
@@ -208,6 +209,14 @@ func TestClient_GetFloat64(t *testing.T) {
 			query:          "$.PI",
 			expectedResult: 3.1415,
 		},
+		{
+			query:          "$.codes[1]",
+			expectedResult: 201.000000,
+		},
+		{
+			query:          "$.codes[4]",
+			expectedResult: 404.567,
+		},
 	}
 	for _, tt := range tests {
 		c, err := NewFromString(TestJSON)
@@ -225,3 +234,74 @@ func TestClient_GetFloat64(t *testing.T) {
 		}
 	}
 }
+
+var sink string
+
+func BenchmarkGetSingleValueWithDora(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		v := getSingleValueWithDora()
+		sink = v
+	}
+}
+
+func BenchmarkIsGetSingleValueWithUnmarshalAndSchema(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		v := getSingleValueWithUnmarshalAndSchema()
+		sink = v
+	}
+}
+
+func BenchmarkIsGetSingleValueWithUnmarshalAndNoSchema(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		v := getSingleValueWithUnmarshalNoSchema()
+		sink = v
+	}
+}
+
+func getSingleValueWithDora() string {
+	c, _ := NewFromString(testJSONObject)
+	r, _ := c.GetString("$.item1[2].some.thing")
+	return r
+}
+
+func getSingleValueWithUnmarshalAndSchema() string {
+	type testJSON struct {
+		Item1 []struct {
+			Some struct {
+				Thing string `json:"thing"`
+			} `json:"some"`
+		}
+	}
+	var tj testJSON
+	json.Unmarshal([]byte(testJSONObject), &tj)
+	return tj.Item1[2].Some.Thing
+}
+
+func getSingleValueWithUnmarshalNoSchema() string {
+	var rootMap map[string]interface{}
+	json.Unmarshal([]byte(testJSONObject), &rootMap)
+	itemOne, _ := rootMap["item1"]
+	switch val := itemOne.(type) {
+	case []interface{}:
+		obj := val[2].(map[string]interface{})
+		obj2, _ := obj["some"].(map[string]interface{})
+		thing, _ := obj2["thing"].(string)
+		return thing
+	}
+	return ""
+}
+
+const testJSONObject = `{
+	"item1": ["aryitem1", "aryitem2", {"some": {"thing": "coolObj"}}],
+	"item2": "simplestringvalue",
+	"item3": {
+		"item4": {
+			"item5": {
+				"item6": ["thing1", 2],
+				"item7": {"reallyinnerobjkey": {"is": "anobject"}}
+			}
+		}
+	},
+	"item4": 1.2345,
+	"item5": true
+}`

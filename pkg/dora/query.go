@@ -54,6 +54,21 @@ func (c *Client) get(query string) (string, error) {
 	return c.result, nil
 }
 
+// setstring sets a string value at the location specified in the query
+func (c *Client) setstring(query string, value string) error {
+	return errors.New("implement me")
+}
+
+// setbool sets a boolean value at the location specified in the query
+func (c *Client) setbool(query string, value bool) error {
+	return errors.New("implement me")
+}
+
+// setbool sets a float64 value at the location specified in the query
+func (c *Client) setfloat64(query string, value float64) error {
+	return errors.New("implement me")
+}
+
 // Object is a simple constant used throughout executeQuery for checking conditions
 const Object = "object"
 

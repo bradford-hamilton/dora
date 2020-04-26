@@ -54,26 +54,26 @@ func main() {
 	fmt.Printf("MemBytes: %d\n", res.MemBytes)
 }
 
-var result string
+var sink string
 
 func benchmarkGetSingleValueWithDora(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		v := getSingleValueWithDora()
-		result = v
+		sink = v
 	}
 }
 
 func benchmarkisGetSingleValueWithUnmarshalAndSchema(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		v := getSingleValueWithUnmarshalAndSchema()
-		result = v
+		sink = v
 	}
 }
 
 func benchmarkisGetSingleValueWithUnmarshalAndNoSchema(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		v := getSingleValueWithUnmarshalNoSchema()
-		result = v
+		sink = v
 	}
 }
 
