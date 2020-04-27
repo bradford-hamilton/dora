@@ -81,7 +81,7 @@ fmt.Println(float)   // 3.14159
     - `GetFloat64`
     - `GetBool`
 
-5. Next feature will be approaching this either with some sort of serialization option maybe similar to stdlib or a simpler one with no options that returns a struct or slice.
+5. Next feature will be approaching this either with some sort of serialization option maybe similar to stdlib or a simpler one with no options that returns a map or something? Will think about that some.
 
  Example with a JSON object as root value:
 ```js

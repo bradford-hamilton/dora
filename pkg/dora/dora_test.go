@@ -362,6 +362,7 @@ func TestClient_GetFloat64(t *testing.T) {
 // 	}
 // }
 
+// -------------------------------------- Benchmarks -------------------------------------- //
 var sink string
 
 func BenchmarkGetSingleValueWithDora(b *testing.B) {
