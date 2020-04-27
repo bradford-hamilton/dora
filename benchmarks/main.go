@@ -33,7 +33,6 @@ import (
 func main() {
 	res := testing.Benchmark(benchmarkGetSingleValueWithDora)
 	fmt.Println("benchmarkGetSingleValueWithDora")
-	fmt.Printf("%s\n%#[1]v\n", res)
 	fmt.Printf("MemAllocs: %d\n", res.MemAllocs)
 	fmt.Printf("MemBytes: %d\n", res.MemBytes)
 
@@ -41,7 +40,6 @@ func main() {
 
 	res = testing.Benchmark(benchmarkisGetSingleValueWithUnmarshalAndNoSchema)
 	fmt.Println("benchmarkisGetSingleValueWithUnmarshalAndNoSchema")
-	fmt.Printf("%s\n%#[1]v\n", res)
 	fmt.Printf("MemAllocs: %d\n", res.MemAllocs)
 	fmt.Printf("MemBytes: %d\n", res.MemBytes)
 
@@ -49,7 +47,6 @@ func main() {
 
 	res = testing.Benchmark(benchmarkisGetSingleValueWithUnmarshalAndSchema)
 	fmt.Println("benchmarkisGetSingleValueWithUnmarshalAndSchema")
-	fmt.Printf("%s\n%#[1]v\n", res)
 	fmt.Printf("MemAllocs: %d\n", res.MemAllocs)
 	fmt.Printf("MemBytes: %d\n", res.MemBytes)
 }

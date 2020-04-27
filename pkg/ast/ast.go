@@ -18,10 +18,22 @@ type RootNode struct {
 	Type      RootNodeType
 }
 
+// Available ast value types
+const (
+	ObjectType Type = iota
+	ArrayType
+	LiteralType
+	PropertyType
+	IdentifierType
+)
+
+// Type is a type alias for int. Represents a values type.
+type Type int
+
 // Object represents a JSON object. It holds a slice of Property as its children,
 // a Type ("Object"), and start & end code points for displaying.
 type Object struct {
-	Type     string // "Object"
+	Type     Type
 	Children []Property
 	Start    int
 	End      int
@@ -30,7 +42,7 @@ type Object struct {
 // Array represents a JSON array It holds a slice of Value as its children,
 // a Type ("Array"), and start & end code points for displaying.
 type Array struct {
-	Type     string // "Array"
+	Type     Type
 	Children []Value
 	Start    int
 	End      int
@@ -38,21 +50,21 @@ type Array struct {
 
 // Literal represents a JSON literal value. It holds a Type ("Literal") and the actual value.
 type Literal struct {
-	Type  string // "Literal"
+	Type  Type
 	Value Value
 }
 
 // Property holds a Type ("Property") as well as a `Key` and `Value`. The Key is an Identifier
 // and the value is any Value.
 type Property struct {
-	Type  string // "Property"
+	Type  Type
 	Key   Identifier
 	Value Value
 }
 
 // Identifier represents a JSON object property key
 type Identifier struct {
-	Type  string // "Identifier"
+	Type  Type
 	Value string // "key1"
 }
 

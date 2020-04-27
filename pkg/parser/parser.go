@@ -80,7 +80,7 @@ func (p *Parser) parseValue() ast.Value {
 
 // parseJSONObject is called when an open left brace `{` token is found
 func (p *Parser) parseJSONObject() ast.Value {
-	obj := ast.Object{Type: "Object"}
+	obj := ast.Object{Type: ast.ObjectType}
 	objState := ast.ObjStart
 
 	for !p.currentTokenTypeIs(token.EOF) {
@@ -137,7 +137,7 @@ func (p *Parser) parseJSONObject() ast.Value {
 
 // parseJSONArray is called when an open left bracket `[` token is found
 func (p *Parser) parseJSONArray() ast.Value {
-	array := ast.Array{Type: "Array"}
+	array := ast.Array{Type: ast.ArrayType}
 	arrayState := ast.ArrayStart
 
 	for !p.currentTokenTypeIs(token.EOF) {
@@ -186,7 +186,7 @@ func (p *Parser) parseJSONArray() ast.Value {
 
 // parseJSONLiteral switches on the current token's type, sets the Value on a return val and returns it.
 func (p *Parser) parseJSONLiteral() ast.Literal {
-	val := ast.Literal{Type: "Literal"}
+	val := ast.Literal{Type: ast.LiteralType}
 
 	// Regardless of what the current token type is - after it's been assigned, we must consume the token
 	defer p.nextToken()
@@ -219,7 +219,7 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 
 // parseProperty is used to parse an object property and in doing so handles setting the `key`:`value` pair.
 func (p *Parser) parseProperty() ast.Property {
-	prop := ast.Property{Type: "Property"}
+	prop := ast.Property{Type: ast.PropertyType}
 	propertyState := ast.PropertyStart
 
 	for !p.currentTokenTypeIs(token.EOF) {
@@ -227,7 +227,7 @@ func (p *Parser) parseProperty() ast.Property {
 		case ast.PropertyStart:
 			if p.currentTokenTypeIs(token.String) {
 				key := ast.Identifier{
-					Type:  "Identifier",
+					Type:  ast.IdentifierType,
 					Value: p.parseString(),
 				}
 				prop.Key = key
