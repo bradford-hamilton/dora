@@ -6,6 +6,9 @@ import (
 )
 
 // BytesToString turns a []byte into a string with 0 MemAllocs and 0 MemBytes.
+// This is an unsafe operation and may lead to problems if the bytes passed in
+// are changed while the string is used. No checking whether bytes are valid
+// UTF-8 data is performed.
 func BytesToString(bytes []byte) (s string) {
 	if len(bytes) == 0 {
 		return s
@@ -17,11 +20,16 @@ func BytesToString(bytes []byte) (s string) {
 }
 
 // StringToBytes turns a string into a []byte with 0 MemAllocs and 0 MemBytes.
+// This is an unsafe operation and will lead to problems if the returned bytes
+// are changed.
 func StringToBytes(s string) (b []byte) {
 	if len(s) == 0 {
 		return b
 	}
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	bh := reflect.SliceHeader{Data: sh.Data, Len: sh.Len, Cap: sh.Len}
-	return *(*[]byte)(unsafe.Pointer(&bh))
+	const max = 0x7fff0000 // 2147418112
+	if len(s) > max {
+		panic("string too large")
+	}
+	return (*[max]byte)(unsafe.Pointer(
+		(*reflect.StringHeader)(unsafe.Pointer(&s)).Data))[:len(s):len(s)]
 }
