@@ -15,7 +15,7 @@ import (
 type Client struct {
 	input       []rune
 	tree        *ast.RootNode
-	query       []rune
+	query       []byte
 	parsedQuery []queryToken
 	result      string
 }

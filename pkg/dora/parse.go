@@ -3,6 +3,8 @@ package dora
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/bradford-hamilton/dora/pkg/danger"
 )
 
 // The available accessTypes for a dora query
@@ -17,8 +19,8 @@ type accessType int
 // Queries are parsed into a []queryTokens to be used for exploring the JSON.
 type queryToken struct {
 	accessType accessType // ObjectAccess or ArrayAccess
-	keyReq     string     // a key like "name"
-	indexReq   int        // an index selection like 0, 1, 2
+	key        string     // a key like "name"
+	index      int        // an index selection like 0, 1, 2
 }
 
 // scanQueryTokens scans a users query input into a collection of queryTokens.
@@ -26,7 +28,7 @@ type queryToken struct {
 //    <dora-query>  ::= <querystring>
 //    <querystring> ::= "<query>,*"
 //    <query>       ::= "[<int>]" | "." + <string>
-func scanQueryTokens(query []rune) ([]queryToken, error) {
+func scanQueryTokens(query []byte) ([]queryToken, error) {
 	var qts []queryToken
 	queryLen := len(query)
 
@@ -44,7 +46,7 @@ func scanQueryTokens(query []rune) ([]queryToken, error) {
 			}
 
 			// Append our new query token and adjust the jump.
-			qts = append(qts, queryToken{accessType: ObjectAccess, keyReq: string(s)})
+			qts = append(qts, queryToken{accessType: ObjectAccess, key: danger.BytesToString(s)})
 			i += jump - 1
 		case '[':
 			// Step into the index, ex: - If we were at the `[` in `[123]` this bumps us to `1`
@@ -57,13 +59,13 @@ func scanQueryTokens(query []rune) ([]queryToken, error) {
 			}
 
 			// The array selector is an int, and we want assert that.
-			index, err := strconv.Atoi(string(s))
+			index, err := strconv.Atoi(danger.BytesToString(s))
 			if err != nil {
 				return []queryToken{}, err
 			}
 
 			// Append our new query token and adjust the jump
-			qts = append(qts, queryToken{accessType: ArrayAccess, indexReq: index})
+			qts = append(qts, queryToken{accessType: ArrayAccess, index: index})
 			i += jump
 		default:
 			return []queryToken{}, errSelectorSytax(string(query[i]))
@@ -74,7 +76,7 @@ func scanQueryTokens(query []rune) ([]queryToken, error) {
 }
 
 // parseObjSelector consumes the property key, sets the `jump` index to right after it, and returns the sliced chunk.
-func parseObjSelector(queryChunk []rune) ([]rune, int, bool, error) {
+func parseObjSelector(queryChunk []byte) ([]byte, int, bool, error) {
 	var jump int
 	var isIndex bool
 	queryLen := len(queryChunk)
@@ -104,7 +106,7 @@ func parseObjSelector(queryChunk []rune) ([]rune, int, bool, error) {
 }
 
 // parseArraySelector consumes the array index request, sets the `jump` index to right after it, and returns the sliced chunk.
-func parseArraySelector(queryChunk []rune) ([]rune, int, error) {
+func parseArraySelector(queryChunk []byte) ([]byte, int, error) {
 	var jump int
 	queryLen := len(queryChunk)
 
@@ -122,14 +124,14 @@ func parseArraySelector(queryChunk []rune) ([]rune, int, error) {
 	)
 }
 
-func isPropertyKey(char rune) bool {
+func isPropertyKey(char byte) bool {
 	return isLetter(char) || isNumber(char)
 }
 
-func isLetter(char rune) bool {
+func isLetter(char byte) bool {
 	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' || char == '_'
 }
 
-func isNumber(char rune) bool {
+func isNumber(char byte) bool {
 	return '0' <= char && char <= '9'
 }

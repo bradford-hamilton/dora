@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/bradford-hamilton/dora/pkg/ast"
+	"github.com/bradford-hamilton/dora/pkg/danger"
 )
 
 // prepAndExecQuery prepares and executes a passed in query
@@ -24,14 +25,14 @@ func (c *Client) prepareQuery(query string, rootNodeType ast.RootNodeType) error
 	if err := validateQueryRoot(query, c.tree.Type); err != nil {
 		return err
 	}
-	c.setQuery([]rune(query))
+	c.setQuery(danger.StringToBytes(query))
 	if err := c.parseQuery(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *Client) setQuery(query []rune) {
+func (c *Client) setQuery(query []byte) {
 	c.query = query
 }
 
@@ -56,24 +57,18 @@ func (c *Client) get(query string) (string, error) {
 
 // setstring sets a string value at the location specified in the query
 func (c *Client) setstring(query string, value string) error {
-	return errors.New("implement me")
+	return errors.New("TODO: implement me")
 }
 
 // setbool sets a boolean value at the location specified in the query
 func (c *Client) setbool(query string, value bool) error {
-	return errors.New("implement me")
+	return errors.New("TODO: implement me")
 }
 
 // setbool sets a float64 value at the location specified in the query
 func (c *Client) setfloat64(query string, value float64) error {
-	return errors.New("implement me")
+	return errors.New("TODO: implement me")
 }
-
-// Object is a simple constant used throughout executeQuery for checking conditions
-const Object = "object"
-
-// Array is a simple constant used throughout executeQuery for checking conditions
-const Array = "array"
 
 // executeQuery is called after the JSON and the query are parsed into their respective
 // tokens. We then iterate over the query tokens, and traverse our tree attempting to
@@ -102,15 +97,15 @@ func (c *Client) executeQuery() error {
 			var found bool
 
 			for _, v := range obj.Children {
-				if v.Key.Value == c.parsedQuery[i].keyReq {
+				if v.Key.Value == c.parsedQuery[i].key {
 					found = true
 					o, astObj := v.Value.(ast.Object)
-					a, astArr := v.Value.(ast.Array)
 					if astObj {
 						obj = o
 						currentType = ast.ObjectType
 						break
 					}
+					a, astArr := v.Value.(ast.Array)
 					if astArr {
 						arr = a
 						currentType = ast.ArrayType
@@ -119,14 +114,14 @@ func (c *Client) executeQuery() error {
 				}
 			}
 			if !found {
-				return fmt.Errorf("Sorry, could not find a key with that value. Key: %s", c.parsedQuery[i].keyReq)
+				return fmt.Errorf("Sorry, could not find a key with that value. Key: %s", c.parsedQuery[i].key)
 			}
 		} else { // If the query token we're on is asking for an array
 			if currentType != ast.ArrayType {
 				return fmt.Errorf("TODO: error")
 			}
 			qt := c.parsedQuery[i]
-			val := arr.Children[qt.indexReq]
+			val := arr.Children[qt.index]
 
 			switch v := val.(type) {
 			case ast.Object:
@@ -155,7 +150,7 @@ func (c *Client) executeQuery() error {
 // needs to be returned and sets the result to the Client
 func (c *Client) setFinalValue(currentType ast.Type, index int, obj ast.Object, arr ast.Array) {
 	if currentType == ast.ObjectType {
-		r := c.parsedQuery[index].keyReq
+		r := c.parsedQuery[index].key
 		for _, v := range obj.Children {
 			if r == v.Key.Value {
 				c.setResultFromValue(v.Value)
@@ -164,7 +159,7 @@ func (c *Client) setFinalValue(currentType ast.Type, index int, obj ast.Object, 
 		}
 		return
 	}
-	ind := c.parsedQuery[index].indexReq
+	ind := c.parsedQuery[index].index
 	c.setResultFromValue(arr.Children[ind])
 }
 

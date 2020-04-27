@@ -8,6 +8,7 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/dora"
 )
 
+// Original Benchmark values for first three benches and some summaries
 // benchmarkGetSingleValueWithDora 7175 ns/op
 // MemAllocs: 17440028
 // MemBytes: 678406512

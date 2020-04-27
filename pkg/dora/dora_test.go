@@ -37,50 +37,50 @@ const TestJSON = `
 
 func TestScanQueryTokens(t *testing.T) {
 	tests := [...]struct {
-		input         []rune
+		input         []byte
 		expectedToken []queryToken
 	}{
 		{
-			input: []rune("$.item1[2].innerKey"),
+			input: []byte("$.item1[2].innerKey"),
 			expectedToken: []queryToken{
-				{accessType: ObjectAccess, keyReq: "item1"},
-				{accessType: ArrayAccess, indexReq: 2},
-				{accessType: ObjectAccess, keyReq: "innerKey"},
+				{accessType: ObjectAccess, key: "item1"},
+				{accessType: ArrayAccess, index: 2},
+				{accessType: ObjectAccess, key: "innerKey"},
 			},
 		},
 		{
-			input: []rune("$[25].item3"),
+			input: []byte("$[25].item3"),
 			expectedToken: []queryToken{
-				{accessType: ArrayAccess, indexReq: 25},
-				{accessType: ObjectAccess, keyReq: "item3"},
+				{accessType: ArrayAccess, index: 25},
+				{accessType: ObjectAccess, key: "item3"},
 			},
 		},
 		{
-			input: []rune("$[7].item4.innerKey"),
+			input: []byte("$[7].item4.innerKey"),
 			expectedToken: []queryToken{
-				{accessType: ArrayAccess, indexReq: 7},
-				{accessType: ObjectAccess, keyReq: "item4"},
-				{accessType: ObjectAccess, keyReq: "innerKey"},
+				{accessType: ArrayAccess, index: 7},
+				{accessType: ObjectAccess, key: "item4"},
+				{accessType: ObjectAccess, key: "innerKey"},
 			},
 		},
 		{
-			input: []rune("$.item1[2].innerKey.anotherValue"),
+			input: []byte("$.item1[2].innerKey.anotherValue"),
 			expectedToken: []queryToken{
-				{accessType: ObjectAccess, keyReq: "item1"},
-				{accessType: ArrayAccess, indexReq: 2},
-				{accessType: ObjectAccess, keyReq: "innerKey"},
-				{accessType: ObjectAccess, keyReq: "anotherValue"},
+				{accessType: ObjectAccess, key: "item1"},
+				{accessType: ArrayAccess, index: 2},
+				{accessType: ObjectAccess, key: "innerKey"},
+				{accessType: ObjectAccess, key: "anotherValue"},
 			},
 		},
 		{
-			input: []rune("$[0].item1[2].coolKey.neatValue[16]"),
+			input: []byte("$[0].item1[2].coolKey.neatValue[16]"),
 			expectedToken: []queryToken{
-				{accessType: ArrayAccess, indexReq: 0},
-				{accessType: ObjectAccess, keyReq: "item1"},
-				{accessType: ArrayAccess, indexReq: 2},
-				{accessType: ObjectAccess, keyReq: "coolKey"},
-				{accessType: ObjectAccess, keyReq: "neatValue"},
-				{accessType: ArrayAccess, indexReq: 16},
+				{accessType: ArrayAccess, index: 0},
+				{accessType: ObjectAccess, key: "item1"},
+				{accessType: ArrayAccess, index: 2},
+				{accessType: ObjectAccess, key: "coolKey"},
+				{accessType: ObjectAccess, key: "neatValue"},
+				{accessType: ArrayAccess, index: 16},
 			},
 		},
 	}
@@ -95,11 +95,11 @@ func TestScanQueryTokens(t *testing.T) {
 			if tok.accessType != tt.expectedToken[i].accessType {
 				t.Fatalf("Expected access type of %d, got: %d", tt.expectedToken[i].accessType, tok.accessType)
 			}
-			if tok.keyReq != tt.expectedToken[i].keyReq {
-				t.Fatalf("Expected keyReq of %s, got: %s", tt.expectedToken[i].keyReq, tok.keyReq)
+			if tok.key != tt.expectedToken[i].key {
+				t.Fatalf("Expected key of %s, got: %s", tt.expectedToken[i].key, tok.key)
 			}
-			if tok.indexReq != tt.expectedToken[i].indexReq {
-				t.Fatalf("Expected indexReq of %d, got: %d", tt.expectedToken[i].indexReq, tok.indexReq)
+			if tok.index != tt.expectedToken[i].index {
+				t.Fatalf("Expected index of %d, got: %d", tt.expectedToken[i].index, tok.index)
 			}
 		}
 	}
@@ -234,6 +234,133 @@ func TestClient_GetFloat64(t *testing.T) {
 		}
 	}
 }
+
+// func TestClient_SetString(t *testing.T) {
+// 	tests := [...]struct {
+// 		query     string
+// 		newString string
+// 	}{
+// 		{
+// 			query:     "$.data.users[0].first_name",
+// 			newString: "randy",
+// 		},
+// 		{
+// 			query:     "$.data.users[0].confirmed",
+// 			newString: "false",
+// 		},
+// 		{
+// 			query:     "$.data.users[0].allergies",
+// 			newString: "not null",
+// 		},
+// 		{
+// 			query:     "$.data.users[0].age",
+// 			newString: "39.001",
+// 		},
+// 		{
+// 			query:     "$.data.users[0].random_items",
+// 			newString: "[false, { \"dog_name\": \"missy\" }]",
+// 		},
+// 		{
+// 			query:     "$.data.users[0].random_items[1]",
+// 			newString: "{ \"dog_name\": \"missy\" }",
+// 		},
+// 		{
+// 			query:     "$.codes",
+// 			newString: "[400, 401, 403, 404, 100.567]",
+// 		},
+// 		{
+// 			query:     "$.codes[1]",
+// 			newString: "321.04",
+// 		},
+// 		{
+// 			query:     "$.superNest.inner1.inner2.inner3.inner4[0].inner5.inner6",
+// 			newString: "burrito",
+// 		},
+// 		{
+// 			query:     "$.date",
+// 			newString: "04/20/2020",
+// 		},
+// 	}
+
+// 	for _, tt := range tests {
+// 		c, err := NewFromString(TestJSON)
+// 		if err != nil {
+// 			t.Fatalf("\nError creating client: %v\n", err)
+// 		}
+
+// 		if err := c.SetString(tt.query, tt.newString); err != nil {
+// 			t.Fatalf("\nError getting string: %v\n", err)
+// 		}
+
+// 		s, err := c.GetString(tt.query)
+// 		if err != nil {
+// 			t.Fatalf("\nError getting string after SetString: %v\n", err)
+// 		}
+// 		if s != tt.newString {
+// 			t.Fatalf("Expected set to overwrite the old value with %s, but it did not. Got: %s", tt.newString, s)
+// 		}
+// 	}
+// }
+
+// func TestClient_SetBool(t *testing.T) {
+// 	tests := [...]struct {
+// 		query   string
+// 		newBool bool
+// 	}{
+// 		{
+// 			query:   "$.disabled",
+// 			newBool: true,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		c, err := NewFromString(TestJSON)
+// 		if err != nil {
+// 			t.Fatalf("\nError creating client: %v\n", err)
+// 		}
+
+// 		if err := c.SetBool(tt.query, tt.newBool); err != nil {
+// 			t.Fatalf("\nError getting bool: %v\n", err)
+// 		}
+
+// 		b, err := c.GetBool(tt.query)
+// 		if err != nil {
+// 			t.Fatalf("\nError getting string after SetString: %v\n", err)
+// 		}
+// 		if b != tt.newBool {
+// 			t.Fatalf("Expected set to overwrite the old value with %t, but it did not. Got: %t", tt.newBool, b)
+// 		}
+// 	}
+// }
+
+// func TestClient_SetFloat64(t *testing.T) {
+// 	tests := [...]struct {
+// 		query    string
+// 		newFloat float64
+// 	}{
+// 		{
+// 			query:    "$.PI",
+// 			newFloat: 5.018,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		c, err := NewFromString(TestJSON)
+// 		if err != nil {
+// 			t.Fatalf("\nError creating client: %v\n", err)
+// 		}
+
+// 		if err = c.SetFloat64(tt.query, tt.newFloat); err != nil {
+// 			t.Fatalf("\nError setting float64: %v\n", err)
+// 		}
+
+// 		f, err := c.GetFloat64(tt.query)
+// 		if err != nil {
+// 			t.Fatalf("\nError getting float64 after SetFloat64: %v\n", err)
+// 		}
+// 		if f != tt.newFloat {
+// 			t.Fatalf("Expected set to overwrite the old value with %f, but it did not. Got: %f", tt.newFloat, f)
+// 		}
+// 	}
+// }
 
 var sink string
 
