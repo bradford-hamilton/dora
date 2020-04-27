@@ -92,7 +92,7 @@ func (c *Client) executeQuery() error {
 		// If the query token we're on is asking for an object
 		if c.parsedQuery[i].accessType == ObjectAccess {
 			if currentType != ast.ObjectType {
-				return fmt.Errorf("TODO: error")
+				return errors.New("incorrect syntax, your query asked for an object but found array")
 			}
 			var found bool
 
@@ -118,7 +118,7 @@ func (c *Client) executeQuery() error {
 			}
 		} else { // If the query token we're on is asking for an array
 			if currentType != ast.ArrayType {
-				return fmt.Errorf("TODO: error")
+				return errors.New("incorrect syntax, your query asked for an array but found object")
 			}
 			qt := c.parsedQuery[i]
 			val := arr.Children[qt.index]
@@ -137,7 +137,7 @@ func (c *Client) executeQuery() error {
 				if i == parsedQueryLen-1 {
 					c.setResultFromLiteral(v.Value)
 				} else {
-					fmt.Println("TODO: error?")
+					return errors.New("Sorry, it looks like your query isn't quite right")
 				}
 			}
 		}
