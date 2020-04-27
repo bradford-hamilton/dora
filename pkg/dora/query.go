@@ -82,9 +82,9 @@ func (c *Client) executeQuery() error {
 	rootVal := *c.tree.RootValue
 	obj, _ := rootVal.(ast.Object)
 	arr, ok := rootVal.(ast.Array)
-	currentType := Object
+	currentType := ast.ObjectType
 	if ok {
-		currentType = Array
+		currentType = ast.ArrayType
 	}
 	parsedQueryLen := len(c.parsedQuery)
 
@@ -96,7 +96,7 @@ func (c *Client) executeQuery() error {
 
 		// If the query token we're on is asking for an object
 		if c.parsedQuery[i].accessType == ObjectAccess {
-			if currentType != Object {
+			if currentType != ast.ObjectType {
 				return fmt.Errorf("TODO: error")
 			}
 			var found bool
@@ -108,12 +108,12 @@ func (c *Client) executeQuery() error {
 					a, astArr := v.Value.(ast.Array)
 					if astObj {
 						obj = o
-						currentType = Object
+						currentType = ast.ObjectType
 						break
 					}
 					if astArr {
 						arr = a
-						currentType = Array
+						currentType = ast.ArrayType
 						break
 					}
 				}
@@ -122,7 +122,7 @@ func (c *Client) executeQuery() error {
 				return fmt.Errorf("Sorry, could not find a key with that value. Key: %s", c.parsedQuery[i].keyReq)
 			}
 		} else { // If the query token we're on is asking for an array
-			if currentType != Array {
+			if currentType != ast.ArrayType {
 				return fmt.Errorf("TODO: error")
 			}
 			qt := c.parsedQuery[i]
@@ -131,11 +131,11 @@ func (c *Client) executeQuery() error {
 			switch v := val.(type) {
 			case ast.Object:
 				obj = v
-				currentType = Object
+				currentType = ast.ObjectType
 				break
 			case ast.Array:
 				arr = v
-				currentType = Array
+				currentType = ast.ArrayType
 				break
 			case ast.Literal:
 				// If we're on the final value, return it
@@ -153,8 +153,8 @@ func (c *Client) executeQuery() error {
 
 // setFinalValue is called when we are on the final queryToken. It handles narrowing down what
 // needs to be returned and sets the result to the Client
-func (c *Client) setFinalValue(currentType string, index int, obj ast.Object, arr ast.Array) {
-	if currentType == Object {
+func (c *Client) setFinalValue(currentType ast.Type, index int, obj ast.Object, arr ast.Array) {
+	if currentType == ast.ObjectType {
 		r := c.parsedQuery[index].keyReq
 		for _, v := range obj.Children {
 			if r == v.Key.Value {
