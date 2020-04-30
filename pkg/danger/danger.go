@@ -20,7 +20,7 @@ func BytesToString(bytes []byte) (s string) {
 }
 
 // StringToBytes turns a string into a []byte with 0 MemAllocs and 0 MemBytes.
-// This is an unsafe operation and will lead to problems if the returned bytes
+// This is an unsafe operation and will lead to problems if the underlying bytes
 // are changed.
 func StringToBytes(s string) (b []byte) {
 	if len(s) == 0 {
@@ -30,6 +30,8 @@ func StringToBytes(s string) (b []byte) {
 	if len(s) > max {
 		panic("string too large")
 	}
-	return (*[max]byte)(unsafe.Pointer(
-		(*reflect.StringHeader)(unsafe.Pointer(&s)).Data))[:len(s):len(s)]
+	bytes := (*[max]byte)(
+		unsafe.Pointer((*reflect.StringHeader)(unsafe.Pointer(&s)).Data),
+	)
+	return bytes[:len(s):len(s)]
 }
