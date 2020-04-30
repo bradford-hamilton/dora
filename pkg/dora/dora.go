@@ -13,7 +13,7 @@ import (
 // parsed AST representation built with Go types), the user's query & parsed version of the query, and
 // a query result. Client exposes public methods which access this underlying data.
 type Client struct {
-	input       []rune
+	input       []byte
 	tree        *ast.RootNode
 	query       []byte
 	parsedQuery []queryToken

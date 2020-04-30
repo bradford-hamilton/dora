@@ -362,7 +362,13 @@ func TestClient_GetFloat64(t *testing.T) {
 // 	}
 // }
 
-// -------------------------------------- Benchmarks -------------------------------------- //
+// Most recent bench: (faster than std lib!!!!!!!!!!!!!)
+// goos: darwin
+// goarch: amd64
+// pkg: github.com/bradford-hamilton/dora/pkg/dora
+// BenchmarkGetSingleValueWithDora-16                      	  216882	      5026 ns/op
+// BenchmarkIsGetSingleValueWithUnmarshalAndSchema-16      	  356506	      3133 ns/op
+// BenchmarkIsGetSingleValueWithUnmarshalAndNoSchema-16    	  187581	      6213 ns/op
 var sink string
 
 func BenchmarkGetSingleValueWithDora(b *testing.B) {

@@ -8,8 +8,8 @@ import (
 // Lexer holds input data and fields that help with scanning.
 // It's methods perform lexical analysis/scanning.
 type Lexer struct {
-	Input        []rune
-	char         rune // current char under examination
+	Input        []byte
+	char         byte // current char under examination
 	position     int  // current position in input (points to current char)
 	readPosition int  // current reading position in input (after current char)
 	line         int  // line number for better error reporting, etc
@@ -17,7 +17,7 @@ type Lexer struct {
 
 // New creates and returns a pointer to the Lexer
 func New(input string) *Lexer {
-	l := &Lexer{Input: []rune(input)}
+	l := &Lexer{Input: []byte(input)}
 	l.readChar()
 	return l
 }
@@ -106,7 +106,7 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func newToken(tokenType token.Type, line, start, end int, char ...rune) token.Token {
+func newToken(tokenType token.Type, line, start, end int, char ...byte) token.Token {
 	return token.Token{
 		Type:    tokenType,
 		Literal: string(char),
@@ -144,11 +144,11 @@ func (l *Lexer) readNumber() string {
 	return string(l.Input[position:l.position])
 }
 
-func isNumber(char rune) bool {
+func isNumber(char byte) bool {
 	return '0' <= char && char <= '9' || char == '.' || char == '-'
 }
 
-func isLetter(char rune) bool {
+func isLetter(char byte) bool {
 	return 'a' <= char && char <= 'z'
 }
 
