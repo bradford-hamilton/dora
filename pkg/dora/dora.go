@@ -72,30 +72,3 @@ func (c *Client) GetFloat64(query string) (float64, error) {
 	}
 	return f, nil
 }
-
-// SetString wraps a call to `setstring`, passing a float64
-// value to be set at the location specified by the query
-func (c *Client) SetString(query string, value string) error {
-	if err := c.setstring(query, value); err != nil {
-		return err
-	}
-	return nil
-}
-
-// SetBool wraps a call to `setbool`, passing a float64
-// value to be set at the location specified by the query
-func (c *Client) SetBool(query string, value bool) error {
-	if err := c.setbool(query, value); err != nil {
-		return err
-	}
-	return nil
-}
-
-// SetFloat64 wraps a call to `setfloat64`, passing a float64
-// value to be set at the location specified by the query
-func (c *Client) SetFloat64(query string, value float64) error {
-	if err := c.setfloat64(query, value); err != nil {
-		return err
-	}
-	return nil
-}
