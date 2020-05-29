@@ -42,22 +42,22 @@ var exampleJSON = `{ "string": "a neat string", "bool": true, "PI": 3.14159 }`
 
 c, err := dora.NewFromString(exampleJSON)
 if err != nil {
-  fmt.Printf("\nError creating client: %v\n", err)
+  return err
 }
 
 str, err := c.GetString("$.string")
 if err != nil {
-  fmt.Println(err)
+  return err
 }
 
 boolean, err := c.GetBool("$.bool")
 if err != nil {
-  fmt.Println(err)
+  return err
 }
 
 float, err := c.GetFloat64("$.PI")
 if err != nil {
-  fmt.Println(err)
+  return err
 }
 
 fmt.Println(str)     // a neat string
@@ -158,5 +158,3 @@ Contributions, issues and feature requests are welcome!<br />Feel free to check 
 
 Give a ⭐️ if this project helped you!
 
-***
-##### _This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
