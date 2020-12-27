@@ -9,6 +9,23 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/danger"
 )
 
+var (
+	// ErrNoDollarSignRoot is used for telling the user the very first character must be a `$`
+	ErrNoDollarSignRoot = errors.New(
+		"Incorrect syntax, query must start with `$` representing the root object or array",
+	)
+	// ErrWrongObjectRootSelector is used for telling the user their JSON root is an object and the selector found was not a `.`
+	ErrWrongObjectRootSelector = errors.New(
+		"Incorrect syntax. Your root JSON type is an object. Therefore, path queries must" +
+			"begin by selecting a `key` from your root object. Ex: `$.keyOnRootObject` or `$[\"keyOnRootObject\"]`",
+	)
+	// ErrWrongArrayRootSelector is used for telling the user their JSON root is an array and the selector found was not a `[`
+	ErrWrongArrayRootSelector = errors.New(
+		"Incorrect syntax. Your root JSON type is an array. Therefore, path queries must" +
+			"begin by selecting an item by index on the root array. Ex: `$[0]` or `$[1]`",
+	)
+)
+
 // prepAndExecQuery prepares and executes a passed in query
 func (c *Client) prepAndExecQuery(query string) error {
 	if err := c.prepareQuery(query, c.tree.Type); err != nil {
@@ -197,23 +214,6 @@ func validateQueryRoot(query string, rootNodeType ast.RootNodeType) error {
 
 	return nil
 }
-
-// ErrNoDollarSignRoot is used for telling the user the very first character must be a `$`
-var ErrNoDollarSignRoot = errors.New(
-	"Incorrect syntax, query must start with `$` representing the root object or array",
-)
-
-// ErrWrongObjectRootSelector is used for telling the user their JSON root is an object and the selector found was not a `.`
-var ErrWrongObjectRootSelector = errors.New(
-	"Incorrect syntax. Your root JSON type is an object. Therefore, path queries must" +
-		"begin by selecting a `key` from your root object. Ex: `$.keyOnRootObject` or `$[\"keyOnRootObject\"]`",
-)
-
-// ErrWrongArrayRootSelector is used for telling the user their JSON root is an array and the selector found was not a `[`
-var ErrWrongArrayRootSelector = errors.New(
-	"Incorrect syntax. Your root JSON type is an array. Therefore, path queries must" +
-		"begin by selecting an item by index on the root array. Ex: `$[0]` or `$[1]`",
-)
 
 func errSelectorSytax(operator string) error {
 	return fmt.Errorf(
