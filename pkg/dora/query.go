@@ -85,11 +85,6 @@ func (c *Client) executeQuery() error {
 	parsedQueryLen := len(c.parsedQuery)
 
 	for i := 0; i < parsedQueryLen; i++ {
-		// If i == parsedQueryLen-1, we are on the final iteration
-		if i == parsedQueryLen-1 {
-			c.setFinalValue(currentType, i, obj, arr)
-		}
-
 		// If the query token we're on is asking for an object
 		if c.parsedQuery[i].accessType == ObjectAccess {
 			if currentType != ast.ObjectType {
@@ -101,6 +96,13 @@ func (c *Client) executeQuery() error {
 				if v.Key.Value == c.parsedQuery[i].key {
 					found = true
 					val := v.Value
+
+					// If i == parsedQueryLen-1, we are on the final iteration
+					if i == parsedQueryLen-1 {
+						c.setResultFromValue(val)
+						return nil
+					}
+
 					if v2, ok := val.(ast.Value); ok {
 						// unwrap the Value
 						val = v2.Content
@@ -129,6 +131,12 @@ func (c *Client) executeQuery() error {
 			qt := c.parsedQuery[i]
 			val := arr.Children[qt.index].Value
 
+			// If i == parsedQueryLen-1, we are on the final iteration
+			if i == parsedQueryLen-1 {
+				c.setResultFromValue(val)
+				return nil
+			}
+
 			if v2, ok := val.(ast.ValueContent); ok {
 				// unwrap the Value
 				val = v2
@@ -155,23 +163,6 @@ func (c *Client) executeQuery() error {
 	}
 
 	return nil
-}
-
-// setFinalValue is called when we are on the final queryToken. It handles narrowing down what
-// needs to be returned and sets the result to the Client
-func (c *Client) setFinalValue(currentType ast.Type, index int, obj ast.Object, arr ast.Array) {
-	if currentType == ast.ObjectType {
-		r := c.parsedQuery[index].key
-		for _, v := range obj.Children {
-			if r == v.Key.Value {
-				c.setResultFromValue(v.Value)
-				break
-			}
-		}
-		return
-	}
-	ind := c.parsedQuery[index].index
-	c.setResultFromValue(arr.Children[ind])
 }
 
 // setResultFromValue switches on an ast.Value type and assigns the appropriate result to the client
