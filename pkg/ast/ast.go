@@ -22,55 +22,97 @@ type RootNode struct {
 const (
 	ObjectType Type = iota
 	ArrayType
+	ArrayItemType
 	LiteralType
 	PropertyType
 	IdentifierType
 )
 
-// Type is a type alias for int. Represents a values type.
+const (
+	StringLiteralValueType LiteralValueType = iota
+	NumberLiteralValueType
+	NullLiteralValueType
+	BooleanLiteralValueType
+)
+
+// Type is a type alias for int. Represents a node's type.
 type Type int
+
+// LiteralValueType is a type alias for int. Represents the type of the value in a Literal node
+type LiteralValueType int
+
+type StructuralItem struct {
+	Value string
+}
 
 // Object represents a JSON object. It holds a slice of Property as its children,
 // a Type ("Object"), and start & end code points for displaying.
 type Object struct {
-	Type     Type
-	Children []Property
-	Start    int
-	End      int
+	Type            Type
+	Children        []Property
+	Start           int
+	End             int
+	SuffixStructure []StructuralItem
 }
 
 // Array represents a JSON array It holds a slice of Value as its children,
 // a Type ("Array"), and start & end code points for displaying.
 type Array struct {
-	Type     Type
-	Children []Value
-	Start    int
-	End      int
+	Type            Type
+	PrefixStructure []StructuralItem
+	Children        []ArrayItem
+	SuffixStructure []StructuralItem
+	Start           int
+	End             int
+}
+
+// Array holds a Type ("ArrayItem") as well as a `Value` and whether there is a comma after the item
+type ArrayItem struct {
+	Type               Type
+	PrefixStructure    []StructuralItem
+	Value              ValueContent
+	PostValueStructure []StructuralItem
+	HasCommaSeparator  bool
 }
 
 // Literal represents a JSON literal value. It holds a Type ("Literal") and the actual value.
 type Literal struct {
-	Type  Type
-	Value Value
+	Type              Type
+	ValueType         LiteralValueType
+	Value             ValueContent
+	Delimiter         string // Delimiter is set for string values
+	OriginalRendering string // Allows preservig numeric formatting from source documents
 }
 
 // Property holds a Type ("Property") as well as a `Key` and `Value`. The Key is an Identifier
 // and the value is any Value.
 type Property struct {
-	Type  Type
-	Key   Identifier
-	Value Value
+	Type               Type
+	PrefixStructure    []StructuralItem
+	Key                Identifier
+	PostKeyStructure   []StructuralItem // NOTE: Colon is between PostKeyStructure and PreValue Structure
+	PreValueStructure  []StructuralItem
+	Value              ValueContent
+	PostValueStructure []StructuralItem
+	HasCommaSeparator  bool
 }
 
 // Identifier represents a JSON object property key
 type Identifier struct {
-	Type  Type
-	Value string // "key1"
+	Type      Type
+	Value     string // "key1"
+	Delimiter string
 }
 
-// Value will eventually have some methods that all Values must implement. For now
+type Value struct {
+	PrefixStructure []StructuralItem
+	Content         ValueContent
+	SuffixStructure []StructuralItem
+}
+
+// ValueContent will eventually have some methods that all Values must implement. For now
 // it represents any JSON value (object | array | boolean | string | number | null)
-type Value interface{}
+type ValueContent interface{}
 
 // state is a type alias for int and used to create the available value states below
 type state int
@@ -87,6 +129,7 @@ const (
 	PropertyStart
 	PropertyKey
 	PropertyColon
+	PropertyValue
 
 	// Array states
 	ArrayStart
