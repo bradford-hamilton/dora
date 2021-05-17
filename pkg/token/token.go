@@ -52,6 +52,7 @@ type Token struct {
 	End     int
 	Prefix  string
 	Suffix  string
+	Reason  string // optional reason when Illegal Type
 }
 
 var validJSONIdentifiers = map[string]Type{
