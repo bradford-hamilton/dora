@@ -124,7 +124,7 @@ func TestClient_GetString(t *testing.T) {
 		},
 		{
 			query:          "$.data.users[0].age",
-			expectedResult: "30.000000",
+			expectedResult: "30",
 		},
 		{
 			query:          "$.data.users[0].random_items",
@@ -140,7 +140,7 @@ func TestClient_GetString(t *testing.T) {
 		},
 		{
 			query:          "$.codes[1]",
-			expectedResult: "201.000000",
+			expectedResult: "201",
 		},
 		{
 			query:          "$.superNest.inner1.inner2.inner3.inner4[0].inner5.inner6",
@@ -149,6 +149,10 @@ func TestClient_GetString(t *testing.T) {
 		{
 			query:          "$.date",
 			expectedResult: "04/19/2020",
+		},
+		{
+			query:          "$.PI",
+			expectedResult: "3.141500",
 		},
 	}
 
