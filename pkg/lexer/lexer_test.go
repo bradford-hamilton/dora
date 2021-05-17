@@ -38,6 +38,19 @@ func TestNextToken_WithSingleLineComments(t *testing.T) {
 	assertLexerMatches(t, l, tests)
 }
 
+func TestNextToken_WithSingleLineCommentNoNewLine(t *testing.T) {
+	input := `// Initial comment`
+
+	tests := []token.Token{
+		{Type: token.LineComment, Literal: "// Initial comment", Line: 0},
+		{Type: token.EOF, Literal: "", Line: 0},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
+
 func TestNextToken_WithSingleQuoteString(t *testing.T) {
 	input := `'"name"''`
 
