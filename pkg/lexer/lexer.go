@@ -40,7 +40,14 @@ func (l *Lexer) readChar() {
 func (l *Lexer) NextToken() token.Token {
 	var t token.Token
 
-	l.skipWhitespace()
+	if l.isWhitespace() {
+		t.Type = token.Whitespace
+		t.Line = l.line
+		t.Start = l.position
+		t.Literal = l.readWhitespace()
+		t.End = l.position
+		return t
+	}
 
 	switch l.char {
 	case '{':
@@ -97,8 +104,24 @@ func (l *Lexer) NextToken() token.Token {
 	return t
 }
 
+func (l *Lexer) isWhitespace() bool {
+	return l.char == ' ' || l.char == '\t' || l.char == '\n' || l.char == '\r'
+}
+
+func (l *Lexer) readWhitespace() string {
+	result := ""
+	for l.isWhitespace() {
+		if l.char == '\n' {
+			l.line++
+		}
+		result += string(l.char)
+		l.readChar() // advance
+	}
+	return result
+}
+
 func (l *Lexer) skipWhitespace() {
-	for l.char == ' ' || l.char == '\t' || l.char == '\n' || l.char == '\r' {
+	for l.isWhitespace() {
 		if l.char == '\n' {
 			l.line++
 		}

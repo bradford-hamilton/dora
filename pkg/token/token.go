@@ -25,6 +25,9 @@ const (
 	Comma        Type = ","
 	Colon        Type = ":"
 
+	// Structural
+	Whitespace Type = "WHITESPACE"
+
 	// Values
 	True  Type = "TRUE"
 	False Type = "FALSE"
