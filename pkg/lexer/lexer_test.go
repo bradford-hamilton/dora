@@ -18,7 +18,7 @@ func TestNextToken_WithSingleLineComments(t *testing.T) {
 `
 
 	tests := []token.Token{
-		{Type: token.LineComment, Literal: "// Initial comment\n", Line: 0},
+		{Type: token.LineComment, Literal: " Initial comment\n", Line: 0, Prefix: "//"},
 		{Type: token.LeftBrace, Literal: "{", Line: 1},
 		{Type: token.Whitespace, Literal: "\n\t", Line: 1},
 		{Type: token.String, Literal: "name", Line: 2, Prefix: `"`, Suffix: `"`},
@@ -28,10 +28,10 @@ func TestNextToken_WithSingleLineComments(t *testing.T) {
 		{Type: token.String, Literal: "Stuart", Line: 2, Prefix: `"`, Suffix: `"`},
 		{Type: token.Comma, Literal: ",", Line: 2},
 		{Type: token.Whitespace, Literal: " ", Line: 2},
-		{Type: token.LineComment, Literal: "// test comment\n", Line: 2},
+		{Type: token.LineComment, Literal: " test comment\n", Line: 2, Prefix: "//"},
 		{Type: token.RightBrace, Literal: "}", Line: 3},
 		{Type: token.Whitespace, Literal: "\n", Line: 3},
-		{Type: token.LineComment, Literal: "// ending comment\n", Line: 4},
+		{Type: token.LineComment, Literal: " ending comment\n", Line: 4, Prefix: "//"},
 		{Type: token.EOF, Literal: "", Line: 5},
 	}
 
@@ -40,11 +40,61 @@ func TestNextToken_WithSingleLineComments(t *testing.T) {
 	assertLexerMatches(t, l, tests)
 }
 
+func TestNextToken_WithBlockComment(t *testing.T) {
+	input := `/* Initial comment
+spanning
+multiple lines 
+*/`
+
+	tests := []token.Token{
+		{Type: token.BlockComment, Literal: ` Initial comment
+spanning
+multiple lines 
+`, Line: 0, Prefix: "/*", Suffix: "*/"},
+		{Type: token.EOF, Literal: "", Line: 0},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
+
+func TestNextToken_WithBlockComment2(t *testing.T) {
+	input := `/* Initial comment
+spanning
+multiple lines */`
+
+	tests := []token.Token{
+		{Type: token.BlockComment, Literal: ` Initial comment
+spanning
+multiple lines `, Line: 0, Prefix: "/*", Suffix: "*/"},
+		{Type: token.EOF, Literal: "", Line: 0},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
+
+func TestNextToken_WithBlockCommentAndLineComment(t *testing.T) {
+	input := `/* Initial comment */ //LineComment`
+
+	tests := []token.Token{
+		{Type: token.BlockComment, Literal: ` Initial comment `, Line: 0, Prefix: "/*", Suffix: "*/"},
+		{Type: token.Whitespace, Literal: ` `, Line: 0},
+		{Type: token.LineComment, Literal: `LineComment`, Line: 0, Prefix: "//"},
+		{Type: token.EOF, Literal: "", Line: 0},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
 func TestNextToken_WithSingleLineCommentNoNewLine(t *testing.T) {
 	input := `// Initial comment`
 
 	tests := []token.Token{
-		{Type: token.LineComment, Literal: "// Initial comment", Line: 0},
+		{Type: token.LineComment, Literal: " Initial comment", Line: 0, Prefix: "//"},
 		{Type: token.EOF, Literal: "", Line: 0},
 	}
 
@@ -233,6 +283,11 @@ func TestParseAndWrite(t *testing.T) {
 			},
 			"names": ["catstack", "lampcat", "langlang"]
 		}]
+		/* Add
+		 * a
+		 * block 
+		 * comment
+		*/
 	},
 	"version": 0.1,
 	"number": 11.4,

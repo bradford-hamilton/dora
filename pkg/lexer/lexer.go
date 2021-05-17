@@ -18,11 +18,11 @@ type Lexer struct {
 // New creates and returns a pointer to the Lexer
 func New(input string) *Lexer {
 	l := &Lexer{Input: []byte(input)}
-	l.readChar()
+	l.advanceChar()
 	return l
 }
 
-func (l *Lexer) readChar() {
+func (l *Lexer) advanceChar() {
 	if l.readPosition >= len(l.Input) {
 		// End of input (haven't read anything yet or EOF)
 		// 0 is ASCII code for "NUL" character
@@ -53,15 +53,27 @@ func (l *Lexer) NextToken() token.Token {
 	case '/':
 		t.Start = l.position
 		t.Line = l.line
-		l.readChar()
-		if l.char != '/' {
+		l.advanceChar()
+		switch l.char {
+		case '/':
+			l.advanceChar()
+			t.Type = token.LineComment
+			t.Literal = l.readLine()
+			t.End = l.position
+			t.Prefix = "//"
+			return t // skip the default readChar
+		case '*':
+			l.advanceChar()
+			t.Type = token.BlockComment
+			t.Literal = l.readBlockComment()
+			t.End = l.position
+			t.Prefix = "/*"
+			t.Suffix = "*/"
+			return t // skip the default readChar
+		default:
 			t = newToken(token.Illegal, l.line, 1, 2, l.char)
 			return t
 		}
-		t.Type = token.LineComment
-		t.Literal = "/" + l.readLine()
-		t.End = l.position
-		return t // skip the default readChar
 	case '{':
 		t = newToken(token.LeftBrace, l.line, l.position, l.position+1, l.char)
 	case '}':
@@ -114,7 +126,7 @@ func (l *Lexer) NextToken() token.Token {
 		t = newToken(token.Illegal, l.line, 1, 2, l.char)
 	}
 
-	l.readChar()
+	l.advanceChar()
 
 	return t
 }
@@ -130,7 +142,7 @@ func (l *Lexer) readWhitespace() string {
 			l.line++
 		}
 		result += string(l.char)
-		l.readChar() // advance
+		l.advanceChar() // advance
 	}
 	return result
 }
@@ -140,7 +152,7 @@ func (l *Lexer) skipWhitespace() {
 		if l.char == '\n' {
 			l.line++
 		}
-		l.readChar()
+		l.advanceChar()
 	}
 }
 
@@ -161,7 +173,7 @@ func (l *Lexer) readString(delimiter byte) string {
 	position := l.position + 1
 	for {
 		prevChar := l.char
-		l.readChar()
+		l.advanceChar()
 		if (l.char == delimiter && prevChar != '\\') || l.char == 0 {
 			break
 		}
@@ -175,17 +187,36 @@ func (l *Lexer) readString(delimiter byte) string {
 func (l *Lexer) readLine() string {
 	position := l.position
 	for {
-		l.readChar()
+		l.advanceChar()
 		if l.char == 0 {
 			break
 		}
 		if l.char == '\n' {
 			l.line++
-			l.readChar()
+			l.advanceChar()
 			break
 		}
 	}
 	return string(l.Input[position:l.position])
+}
+
+// readBlockComment sets a start position and reads through characters
+// When it finds a closing `*/`, it stops consuming characters and
+// returns the string between the start and end positions.
+func (l *Lexer) readBlockComment() string {
+	position := l.position
+	for {
+		prevChar := l.char
+		l.advanceChar()
+		if l.char == 0 {
+			break
+		}
+		if l.char == '/' && prevChar == '*' {
+			l.advanceChar()
+			break
+		}
+	}
+	return string(l.Input[position : l.position-2]) // don't include the closing "*/"
 }
 
 // readNumber sets a start position and reads through characters. When it
@@ -195,7 +226,7 @@ func (l *Lexer) readNumber() string {
 	position := l.position
 
 	for isNumber(l.char) {
-		l.readChar()
+		l.advanceChar()
 	}
 
 	return string(l.Input[position:l.position])
@@ -213,7 +244,7 @@ func (l *Lexer) readIdentifier() string {
 	position := l.position
 
 	for isLetter(l.char) {
-		l.readChar()
+		l.advanceChar()
 	}
 
 	return string(l.Input[position:l.position])

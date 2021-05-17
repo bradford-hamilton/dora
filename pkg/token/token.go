@@ -29,7 +29,8 @@ const (
 	Whitespace Type = "WHITESPACE"
 
 	// Comments
-	LineComment Type = "//"
+	LineComment  Type = "//"
+	BlockComment Type = "/*"
 
 	// Values
 	True  Type = "TRUE"
