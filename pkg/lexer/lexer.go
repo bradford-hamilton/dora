@@ -74,12 +74,15 @@ func (l *Lexer) NextToken() token.Token {
 		t = newToken(token.Colon, l.line, l.position, l.position+1, l.char)
 	case ',':
 		t = newToken(token.Comma, l.line, l.position, l.position+1, l.char)
-	case '"':
+	case '"', '\'':
+		delimiter := l.char
 		t.Type = token.String
-		t.Literal = l.readString()
+		t.Literal = l.readString(delimiter)
 		t.Line = l.line
 		t.Start = l.position
 		t.End = l.position + 1
+		t.Prefix = string(delimiter)
+		t.Suffix = string(delimiter)
 	case 0:
 		t.Literal = ""
 		t.Type = token.EOF
@@ -154,12 +157,12 @@ func newToken(tokenType token.Type, line, start, end int, char ...byte) token.To
 // readString sets a start position and reads through characters
 // When it finds a closing `"`, it stops consuming characters and
 // returns the string between the start and end positions.
-func (l *Lexer) readString() string {
+func (l *Lexer) readString(delimiter byte) string {
 	position := l.position + 1
 	for {
 		prevChar := l.char
 		l.readChar()
-		if (l.char == '"' && prevChar != '\\') || l.char == 0 {
+		if (l.char == delimiter && prevChar != '\\') || l.char == 0 {
 			break
 		}
 	}
