@@ -28,6 +28,9 @@ const (
 	// Structural
 	Whitespace Type = "WHITESPACE"
 
+	// Comments
+	LineComment Type = "//"
+
 	// Values
 	True  Type = "TRUE"
 	False Type = "FALSE"

@@ -50,6 +50,18 @@ func (l *Lexer) NextToken() token.Token {
 	}
 
 	switch l.char {
+	case '/':
+		t.Start = l.position
+		t.Line = l.line
+		l.readChar()
+		if l.char != '/' {
+			t = newToken(token.Illegal, l.line, 1, 2, l.char)
+			return t
+		}
+		t.Type = token.LineComment
+		t.Literal = "/" + l.readLine()
+		t.End = l.position
+		return t // skip the default readChar
 	case '{':
 		t = newToken(token.LeftBrace, l.line, l.position, l.position+1, l.char)
 	case '}':
@@ -148,6 +160,25 @@ func (l *Lexer) readString() string {
 		prevChar := l.char
 		l.readChar()
 		if (l.char == '"' && prevChar != '\\') || l.char == 0 {
+			break
+		}
+	}
+	return string(l.Input[position:l.position])
+}
+
+// readLine sets a start position and reads through characters
+// When it finds a line break, it stops consuming characters and
+// returns the string between the start and end positions.
+func (l *Lexer) readLine() string {
+	position := l.position
+	for {
+		l.readChar()
+		if l.char == 0 {
+			break
+		}
+		if l.char == '\n' {
+			l.line++
+			l.readChar()
 			break
 		}
 	}

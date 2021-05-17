@@ -7,19 +7,34 @@ import (
 	"github.com/bradford-hamilton/dora/pkg/token"
 )
 
-func TestNextToken_Simple(t *testing.T) {
-	input := `{
-}`
+func TestNextToken_WithSingleLineComments(t *testing.T) {
+	input := `// Initial comment
+{
+	"name" : "Stuart", // test comment
+}
+// ending comment
+`
 
 	tests := [...]struct {
 		expectedType    token.Type
 		expectedLiteral string
 		expectedLine    int
 	}{
-		{token.LeftBrace, "{", 0},
-		{token.Whitespace, "\n", 0},
-		{token.RightBrace, "}", 1},
-		{token.EOF, "", 1},
+		{token.LineComment, "// Initial comment\n", 0},
+		{token.LeftBrace, "{", 1},
+		{token.Whitespace, "\n\t", 1},
+		{token.String, "name", 2},
+		{token.Whitespace, " ", 2},
+		{token.Colon, ":", 2},
+		{token.Whitespace, " ", 2},
+		{token.String, "Stuart", 2},
+		{token.Comma, ",", 2},
+		{token.Whitespace, " ", 2},
+		{token.LineComment, "// test comment\n", 2},
+		{token.RightBrace, "}", 3},
+		{token.Whitespace, "\n", 3},
+		{token.LineComment, "// ending comment\n", 4},
+		{token.EOF, "", 5},
 	}
 
 	l := New(input)
@@ -27,14 +42,17 @@ func TestNextToken_Simple(t *testing.T) {
 	for i, tt := range tests {
 		token := l.NextToken()
 
+		expectedText := fmt.Sprintf("%q %q %d", tt.expectedType, tt.expectedLiteral, tt.expectedLine)
+		actualText := fmt.Sprintf("%q %q %d", token.Type, token.Literal, token.Line)
+
 		if token.Type != tt.expectedType {
-			t.Fatalf("tests[%d] - tokentype wrong. Expected: %q, Got: %q", i, tt.expectedType, token.Type)
+			t.Fatalf("tests[%d] - tokentype wrong. Expected: %s, Got: %s", i, expectedText, actualText)
 		}
 		if token.Literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] - literal wrong. Expected: %q, Got: %q", i, tt.expectedLiteral, token.Literal)
+			t.Fatalf("tests[%d] - literal wrong. Expected: %s, Got: %s", i, expectedText, actualText)
 		}
 		if token.Line != tt.expectedLine {
-			t.Fatalf("tests[%d] - line wrong. Expected: %q, Got: %q", i, tt.expectedLine, token.Line)
+			t.Fatalf("tests[%d] - line wrong. Expected: %s, Got: %s", i, expectedText, actualText)
 		}
 	}
 }
