@@ -2,9 +2,11 @@ package lexer
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/bradford-hamilton/dora/pkg/token"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNextToken_WithSingleLineComments(t *testing.T) {
@@ -210,24 +212,56 @@ func TestNextToken(t *testing.T) {
 	assertLexerMatches(t, l, tests)
 }
 
+func TestParseAndWrite(t *testing.T) {
+	input := `// Initial comment
+{
+	"items": {
+		"item": [{
+			'id': '0001', // <-- using single quotes here
+			"type": "donut",
+			"name": "Cake",
+			// Add
+			// comments
+			// again
+			"cpu": 55,
+			"batters": {
+				"batter": [{
+					"id": false,
+					"name": null,
+					"fun": true
+				}]
+			},
+			"names": ["catstack", "lampcat", "langlang"]
+		}]
+	},
+	"version": 0.1,
+	"number": 11.4,
+	"negativeNum": -5,
+	"escapeString": "I'm some \"string\" thats escaped"
+}`
+	rewritten := lexAndOutputString(input)
+
+	assert.Equal(t, rewritten, input)
+}
+
 func assertLexerMatches(t *testing.T, l *Lexer, tests []token.Token) {
 	for i, expectedToken := range tests {
-		token := l.NextToken()
+		actualToken := l.NextToken()
 
-		if token.Type != expectedToken.Type {
-			t.Fatalf("tests[%d] - tokentype wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(token))
+		if actualToken.Type != expectedToken.Type {
+			t.Fatalf("tests[%d] - tokentype wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
 		}
-		if token.Literal != expectedToken.Literal {
-			t.Fatalf("tests[%d] - literal wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(token))
+		if actualToken.Literal != expectedToken.Literal {
+			t.Fatalf("tests[%d] - literal wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
 		}
-		if token.Line != expectedToken.Line {
-			t.Fatalf("tests[%d] - line wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(token))
+		if actualToken.Line != expectedToken.Line {
+			t.Fatalf("tests[%d] - line wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
 		}
-		if token.Prefix != expectedToken.Prefix {
-			t.Fatalf("tests[%d] - prefix wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(token))
+		if actualToken.Prefix != expectedToken.Prefix {
+			t.Fatalf("tests[%d] - prefix wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
 		}
-		if token.Suffix != expectedToken.Suffix {
-			t.Fatalf("tests[%d] - suffix wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(token))
+		if actualToken.Suffix != expectedToken.Suffix {
+			t.Fatalf("tests[%d] - suffix wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
 		}
 	}
 }
@@ -241,4 +275,18 @@ func formatTokenOutputString(t token.Token) string {
 		result += fmt.Sprintf("; Suffix:%q", t.Suffix)
 	}
 	return result
+}
+
+func lexAndOutputString(input string) string {
+	l := New(input)
+
+	var builder strings.Builder
+
+	for t := l.NextToken(); t.Type != token.EOF; t = l.NextToken() {
+		builder.WriteString(t.Prefix)
+		builder.WriteString(t.Literal)
+		builder.WriteString(t.Suffix)
+	}
+
+	return builder.String()
 }
