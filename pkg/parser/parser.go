@@ -132,7 +132,11 @@ func (p *Parser) parseJSONObject() ast.ValueContent {
 				obj.End = p.currentToken.End
 				return obj
 			}
-			prop := p.parseProperty()
+			prop, err := p.parseProperty()
+			if err != nil {
+				p.parseError(fmt.Sprintf("Error parsing property: %s", err))
+				return nil
+			}
 			obj.Children = append(obj.Children, prop)
 			objState = ast.ObjProperty
 		case ast.ObjProperty:
@@ -159,12 +163,14 @@ func (p *Parser) parseJSONObject() ast.ValueContent {
 				obj.End = p.currentToken.End
 				return obj
 			}
-			prop := p.parseProperty()
-			prop.PrefixStructure = append(structure, prop.PrefixStructure...)
-			if prop.Value != nil {
-				obj.Children = append(obj.Children, prop)
-				objState = ast.ObjProperty
+			prop, err := p.parseProperty()
+			if err != nil {
+				p.parseError(fmt.Sprintf("Error parsing property: %s", err))
+				return nil
 			}
+			prop.Key.PrefixStructure = append(structure, prop.Key.PrefixStructure...)
+			obj.Children = append(obj.Children, prop)
+			objState = ast.ObjProperty
 		}
 	}
 
@@ -282,66 +288,72 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 }
 
 // parseProperty is used to parse an object property and in doing so handles setting the `key`:`value` pair.
-func (p *Parser) parseProperty() ast.Property {
+func (p *Parser) parseProperty() (ast.Property, error) {
 	prop := ast.Property{Type: ast.PropertyType}
 	propertyState := ast.PropertyStart
 
 	for !p.currentTokenTypeIs(token.EOF) {
 		switch propertyState {
 		case ast.PropertyStart:
-			prop.PrefixStructure = p.parseStructure()
+			prefixStructure := p.parseStructure()
 			if p.currentTokenTypeIs(token.String) {
 				key := ast.Identifier{
-					Type:      ast.IdentifierType,
-					Value:     p.parseString(),
-					Delimiter: p.currentToken.Prefix,
+					Type:            ast.IdentifierType,
+					PrefixStructure: prefixStructure,
+					Value:           p.parseString(),
+					Delimiter:       p.currentToken.Prefix,
 				}
 				prop.Key = key
 				propertyState = ast.PropertyKey
 				p.nextToken()
+				prop.Key.SuffixStructure = p.parseStructure()
 			} else {
-				p.parseError(fmt.Sprintf(
-					"Error parsing property start. Expected String token, got: %s",
+				return ast.Property{}, fmt.Errorf(
+					"error parsing property start. Expected String token, got: %s",
 					p.currentToken.Literal,
-				))
+				)
 			}
 		case ast.PropertyKey:
-			prop.PostKeyStructure = p.parseStructure()
-
 			if p.currentTokenTypeIs(token.Colon) {
 				propertyState = ast.PropertyColon
 				p.nextToken()
 			} else {
-				p.parseError(fmt.Sprintf(
-					"Error parsing property. Expected Colon token, got: %s",
-					p.currentToken.Literal,
-				))
+				return ast.Property{}, fmt.Errorf(
+					"error parsing property. Expected Colon token, got: %s",
+					p.currentToken.Literal)
+
 			}
 		case ast.PropertyColon:
-			prop.PreValueStructure = p.parseStructure()
 			val := p.parseValue()
 			prop.Value = val
 			propertyState = ast.PropertyValue
 		case ast.PropertyValue:
-			prop.PostValueStructure = p.parseStructure()
-			return prop
+			return prop, nil
 		}
 	}
 
-	return prop
+	return prop, nil
 }
 
 func (p *Parser) parseStructure() []ast.StructuralItem {
 	var result []ast.StructuralItem
 	for {
+		var itemType ast.StructuralItemType
+
 		switch p.currentToken.Type {
-		case token.Whitespace, token.BlockComment, token.LineComment:
-			value := p.currentToken.Prefix + p.currentToken.Literal + p.currentToken.Suffix
-			result = append(result, ast.StructuralItem{Value: value})
-			p.nextToken()
+		case token.Whitespace:
+			itemType = ast.WhitespaceStructuralItemType
+		case token.BlockComment:
+			itemType = ast.BlockCommentStructuralItemType
+		case token.LineComment:
+			itemType = ast.LineCommentStructuralItemType
 		default:
 			return result
 		}
+
+		value := p.currentToken.Prefix + p.currentToken.Literal + p.currentToken.Suffix
+		result = append(result, ast.StructuralItem{ItemType: itemType, Value: value})
+		p.nextToken()
 	}
 }
 

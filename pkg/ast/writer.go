@@ -19,7 +19,7 @@ func NewJSONWriter(writer io.Writer) *JSONWriter {
 }
 
 // WriteJSONString returns the string representation of the JSON in rootNode
-func WriteJSONString(rootNode RootNode) (string, error) {
+func WriteJSONString(rootNode *RootNode) (string, error) {
 
 	var builder strings.Builder
 	j := NewJSONWriter(&builder)
@@ -86,25 +86,13 @@ func (j *JSONWriter) appendObject(item Object) error {
 	return nil
 }
 func (j *JSONWriter) appendProperty(item Property) error {
-	if err := j.appendStructure(item.PrefixStructure); err != nil {
-		return err
-	}
 	if err := j.appendIdentifier(item.Key); err != nil {
-		return err
-	}
-	if err := j.appendStructure(item.PostKeyStructure); err != nil {
 		return err
 	}
 	if _, err := fmt.Fprint(j.writer, ":"); err != nil {
 		return err
 	}
-	if err := j.appendStructure(item.PreValueStructure); err != nil {
-		return err
-	}
-	if err := j.appendValueContent(item.Value); err != nil {
-		return err
-	}
-	if err := j.appendStructure(item.PostValueStructure); err != nil {
+	if err := j.appendValue(item.Value); err != nil {
 		return err
 	}
 	if item.HasCommaSeparator {
@@ -115,7 +103,13 @@ func (j *JSONWriter) appendProperty(item Property) error {
 	return nil
 }
 func (j *JSONWriter) appendIdentifier(item Identifier) error {
+	if err := j.appendStructure(item.PrefixStructure); err != nil {
+		return err
+	}
 	if _, err := fmt.Fprintf(j.writer, "%s%s%s", item.Delimiter, item.Value, item.Delimiter); err != nil {
+		return err
+	}
+	if err := j.appendStructure(item.SuffixStructure); err != nil {
 		return err
 	}
 	return nil

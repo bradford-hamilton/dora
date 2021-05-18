@@ -117,6 +117,7 @@ func TestParseAndWriteMinimal(t *testing.T) {
 
 	assert.Equal(t, input, rewritten)
 }
+
 func TestParseAndWriteObjectWithSingleProperty(t *testing.T) {
 	input := `{
 		"prop1"  : "value1"
@@ -129,7 +130,7 @@ func TestParseAndWriteObjectWithSingleProperty(t *testing.T) {
 func TestParseAndWriteObjectWithFloatProperty(t *testing.T) {
 	input := `{
 		"prop1" : 1.23,
-		"prop2" : 1.234567890 	
+		"prop2" : 1.234567890
 	}`
 	rewritten, err := parseAndOutputString(input)
 	if assert.NoError(t, err) {
@@ -154,10 +155,11 @@ func TestParseAndWriteObjectWithSingleQuotedProperty(t *testing.T) {
 		assert.Equal(t, input, rewritten)
 	}
 }
+
 func TestParseAndWriteObjectWithMultipleProperties(t *testing.T) {
 	input := `{
 		"prop1"  : "value1",
-		"prop2"  : "value2"   ,   
+		"prop2"  : "value2"   ,
 		"prop3"  : "value3"
 	}`
 	rewritten, err := parseAndOutputString(input)
@@ -222,5 +224,5 @@ func parseAndOutputString(input string) (string, error) {
 		return "", err
 	}
 
-	return ast.WriteJSONString(j)
+	return ast.WriteJSONString(&j)
 }

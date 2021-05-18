@@ -103,17 +103,13 @@ func (c *Client) executeQuery() error {
 						return nil
 					}
 
-					if v2, ok := val.(ast.Value); ok {
-						// unwrap the Value
-						val = v2.Content
-					}
-					o, astObj := val.(ast.Object)
+					o, astObj := val.Content.(ast.Object)
 					if astObj {
 						obj = o
 						currentType = ast.ObjectType
 						break
 					}
-					a, astArr := val.(ast.Array)
+					a, astArr := val.Content.(ast.Array)
 					if astArr {
 						arr = a
 						currentType = ast.ArrayType
@@ -122,7 +118,7 @@ func (c *Client) executeQuery() error {
 				}
 			}
 			if !found {
-				return fmt.Errorf("Sorry, could not find a key with that value. Key: %s", c.parsedQuery[i].key)
+				return fmt.Errorf("sorry, could not find a key with that value. Key: %s", c.parsedQuery[i].key)
 			}
 		} else { // If the query token we're on is asking for an array
 			if currentType != ast.ArrayType {
@@ -137,26 +133,19 @@ func (c *Client) executeQuery() error {
 				return nil
 			}
 
-			if v2, ok := val.(ast.ValueContent); ok {
-				// unwrap the Value
-				val = v2
-			}
-
 			switch v := val.(type) {
 			case ast.Object:
 				obj = v
 				currentType = ast.ObjectType
-				break
 			case ast.Array:
 				arr = v
 				currentType = ast.ArrayType
-				break
 			case ast.Literal:
 				// If we're on the final value, return it
 				if i == parsedQueryLen-1 {
 					c.setResultFromLiteral(v.Value)
 				} else {
-					return errors.New("Sorry, it looks like your query isn't quite right")
+					return errors.New("sorry, it looks like your query isn't quite right")
 				}
 			}
 		}
@@ -225,7 +214,7 @@ func validateQueryRoot(query string, rootNodeType ast.RootNodeType) error {
 
 func errSelectorSytax(operator string) error {
 	return fmt.Errorf(
-		"Error parsing query, expected either a `.` for selections on an object or a `[` for selections on an array. Got: %s",
+		"error parsing query, expected either a `.` for selections on an object or a `[` for selections on an array. Got: %s",
 		operator,
 	)
 }
