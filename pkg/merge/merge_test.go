@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMergeSimpleObjectsNoConflicts(t *testing.T) {
+func TestMergeSimpleObjectNoConflicts(t *testing.T) {
 
 	baseInput := `{
 	"prop1" : "Hello"
@@ -29,7 +29,7 @@ func TestMergeSimpleObjectsNoConflicts(t *testing.T) {
 
 	testMerge(t, baseInput, newInput, expectedOutput)
 }
-func TestMergeSimpleObjectsTrailingCommaOnBaseNoConflicts(t *testing.T) {
+func TestMergeSimpleObjectTrailingCommaOnBaseNoConflicts(t *testing.T) {
 
 	baseInput := `{
 	"prop1" : "Hello",
@@ -49,7 +49,7 @@ func TestMergeSimpleObjectsTrailingCommaOnBaseNoConflicts(t *testing.T) {
 
 	testMerge(t, baseInput, newInput, expectedOutput)
 }
-func TestMergeSimpleObjectsTrailingCommaOnMergeNoConflicts(t *testing.T) {
+func TestMergeSimpleObjectTrailingCommaOnMergeNoConflicts(t *testing.T) {
 
 	baseInput := `{
 	"prop1" : "Hello"
@@ -69,7 +69,7 @@ func TestMergeSimpleObjectsTrailingCommaOnMergeNoConflicts(t *testing.T) {
 
 	testMerge(t, baseInput, newInput, expectedOutput)
 }
-func TestMergeSimpleObjectsTrailingCommaOnBothNoConflicts(t *testing.T) {
+func TestMergeSimpleObjectTrailingCommaOnBothNoConflicts(t *testing.T) {
 
 	baseInput := `{
 	"prop1" : "Hello",
@@ -84,6 +84,21 @@ func TestMergeSimpleObjectsTrailingCommaOnBothNoConflicts(t *testing.T) {
 	"prop2" : "World",
 
 
+}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+
+func TestMergeSimpleObjectWithConflict(t *testing.T) {
+
+	baseInput := `{
+	"prop1" : "Hello"
+}`
+	newInput := `{
+	"prop1" : "Goodbye"
+}`
+	expectedOutput := `{
+	"prop1" : "Goodbye"
 }`
 
 	testMerge(t, baseInput, newInput, expectedOutput)
