@@ -9,6 +9,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMergeSimpleObjectNoWhitespaceNoConflicts(t *testing.T) {
+
+	baseInput := `{"prop1":"Hello"}`
+	newInput := `{"prop2":"World"}`
+	expectedOutput := `{"prop1":"Hello","prop2":"World"}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+func TestMergeSimpleObjectNoWhitespaceWithConflict(t *testing.T) {
+
+	baseInput := `{"prop1":"Hello"}`
+	newInput := `{"prop1":"Goodbye"}`
+	expectedOutput := `{"prop1":"Goodbye"}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+
 func TestMergeSimpleObjectNoConflicts(t *testing.T) {
 
 	baseInput := `{
@@ -99,6 +116,77 @@ func TestMergeSimpleObjectWithConflict(t *testing.T) {
 }`
 	expectedOutput := `{
 	"prop1" : "Goodbye"
+}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+
+func TestMergeNestedObjectNoConflicts(t *testing.T) {
+
+	baseInput := `{
+	"prop" : {
+		"prop1" : "Hello"
+	}
+}`
+	newInput := `{
+	"prop" : {
+		"prop2" : "World"
+	}
+}`
+	expectedOutput := `{
+	"prop" : {
+		"prop1" : "Hello",
+		"prop2" : "World"
+	}
+}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+func TestMergeNestedObjectWithConflict(t *testing.T) {
+
+	baseInput := `{
+	"prop" : {
+		"prop1" : "Hello"
+	}
+}`
+	newInput := `{
+	"prop" : {
+		"prop1" : "Goodbye"
+	}
+}`
+	expectedOutput := `{
+	"prop" : {
+		"prop1" : "Goodbye"
+	}
+}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+
+func TestMergeArrayValuesNoWhitespace(t *testing.T) {
+
+	baseInput := `{
+	"prop1" : [1,2,3]
+}`
+	newInput := `{
+	"prop1" : [4,5,6]
+}`
+	expectedOutput := `{
+	"prop1" : [1,2,3,4,5,6]
+}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+func TestMergeArrayValuesWithWhitespace(t *testing.T) {
+
+	baseInput := `{
+	"prop1" : [1, 2, 3]
+}`
+	newInput := `{
+	"prop1" : [	4,	5,	6]
+}`
+	expectedOutput := `{
+	"prop1" : [1, 2, 3,	4,	5,	6]
 }`
 
 	testMerge(t, baseInput, newInput, expectedOutput)

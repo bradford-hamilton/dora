@@ -21,6 +21,7 @@ func MergeJSON(baseDocument ast.RootNode, mergeDocument ast.RootNode) (*ast.Root
 func mergeValues(baseValue ast.Value, mergeValue ast.Value, currentPath string) (ast.Value, error) {
 
 	result := baseValue
+
 	switch resultContent := (baseValue.Content).(type) {
 	case ast.Object:
 		switch mergeContent := mergeValue.Content.(type) {
@@ -54,8 +55,24 @@ func mergeValues(baseValue ast.Value, mergeValue ast.Value, currentPath string) 
 		default:
 			return ast.Value{}, fmt.Errorf("mis-matched types at %q. base type: %T, merge type: %T", currentPath, resultContent, mergeContent)
 		}
+
+	case ast.Array:
+		switch mergeContent := mergeValue.Content.(type) {
+		case ast.Array:
+			lastChildIndex := len(resultContent.Children) - 1
+			if !resultContent.Children[lastChildIndex].HasCommaSeparator {
+				resultContent.Children[lastChildIndex].HasCommaSeparator = true
+			}
+			resultContent.Children = append(resultContent.Children, mergeContent.Children...)
+			result.Content = resultContent
+			return result, nil
+		default:
+			return ast.Value{}, fmt.Errorf("mis-matched types at %q. base type: %T, merge type: %T", currentPath, resultContent, mergeContent)
+		}
+
 	case ast.Literal:
 		return mergeValue, nil
+
 	default:
 		return ast.Value{}, fmt.Errorf("unhandled type at %q. base type: %T", currentPath, resultContent)
 	}
