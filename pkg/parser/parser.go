@@ -42,7 +42,7 @@ func (p *Parser) ParseJSON() (ast.RootNode, error) {
 	}
 
 	val := p.parseValue()
-	if val == nil {
+	if val.Content == nil {
 		p.parseError(fmt.Sprintf(
 			"Error parsing JSON expected a value, got: %v:",
 			p.currentToken.Literal,
@@ -68,18 +68,47 @@ func (p *Parser) currentTokenTypeIs(t token.Type) bool {
 // parseValue is our dynamic entrypoint to parsing JSON values. All scenarios for
 // this parser fall under these 3 actions.
 func (p *Parser) parseValue() ast.Value {
+	value := ast.Value{
+		PrefixStructure: p.parseStructure(),
+	}
+
 	switch p.currentToken.Type {
 	case token.LeftBrace:
-		return p.parseJSONObject()
+		value.Content = p.parseJSONObject()
 	case token.LeftBracket:
-		return p.parseJSONArray()
+		value.Content = p.parseJSONArray()
 	default:
-		return p.parseJSONLiteral()
+		value.Content = p.parseJSONLiteral()
 	}
+
+	value.SuffixStructure = p.parseStructure()
+
+	return value
+}
+func (p *Parser) parseArrayItem() ast.ArrayItem {
+
+	arrayItem := ast.ArrayItem{
+		Type:            ast.ArrayItemType,
+		PrefixStructure: p.parseStructure(),
+	}
+
+	switch p.currentToken.Type {
+	case token.LeftBrace:
+		arrayItem.Value = p.parseJSONObject()
+	case token.LeftBracket:
+		arrayItem.Value = p.parseJSONArray()
+	default:
+		arrayItem.Value = p.parseJSONLiteral()
+	}
+
+	arrayItem.PostValueStructure = p.parseStructure()
+
+	return arrayItem
+
 }
 
 // parseJSONObject is called when an open left brace `{` token is found
-func (p *Parser) parseJSONObject() ast.Value {
+func (p *Parser) parseJSONObject() ast.ValueContent {
 	obj := ast.Object{Type: ast.ObjectType}
 	objState := ast.ObjStart
 
@@ -112,6 +141,7 @@ func (p *Parser) parseJSONObject() ast.Value {
 				obj.End = p.currentToken.Start
 				return obj
 			} else if p.currentTokenTypeIs(token.Comma) {
+				obj.Children[len(obj.Children)-1].HasCommaSeparator = true
 				objState = ast.ObjComma
 				p.nextToken()
 			} else {
@@ -122,7 +152,15 @@ func (p *Parser) parseJSONObject() ast.Value {
 				return nil
 			}
 		case ast.ObjComma:
+			structure := p.parseStructure()
+			if p.currentTokenTypeIs(token.RightBrace) {
+				obj.SuffixStructure = structure
+				p.nextToken()
+				obj.End = p.currentToken.End
+				return obj
+			}
 			prop := p.parseProperty()
+			prop.PrefixStructure = append(structure, prop.PrefixStructure...)
 			if prop.Value != nil {
 				obj.Children = append(obj.Children, prop)
 				objState = ast.ObjProperty
@@ -136,9 +174,11 @@ func (p *Parser) parseJSONObject() ast.Value {
 }
 
 // parseJSONArray is called when an open left bracket `[` token is found
-func (p *Parser) parseJSONArray() ast.Value {
+func (p *Parser) parseJSONArray() ast.ValueContent {
 	array := ast.Array{Type: ast.ArrayType}
 	arrayState := ast.ArrayStart
+
+	array.PrefixStructure = p.parseStructure()
 
 	for !p.currentTokenTypeIs(token.EOF) {
 		switch arrayState {
@@ -154,8 +194,8 @@ func (p *Parser) parseJSONArray() ast.Value {
 				p.nextToken()
 				return array
 			}
-			val := p.parseValue()
-			array.Children = append(array.Children, val)
+			arrayItem := p.parseArrayItem()
+			array.Children = append(array.Children, arrayItem)
 			arrayState = ast.ArrayValue
 			if p.peekTokenTypeIs(token.RightBracket) {
 				p.nextToken()
@@ -166,6 +206,7 @@ func (p *Parser) parseJSONArray() ast.Value {
 				p.nextToken()
 				return array
 			} else if p.currentTokenTypeIs(token.Comma) {
+				array.Children[len(array.Children)-1].HasCommaSeparator = true
 				arrayState = ast.ArrayComma
 				p.nextToken()
 			} else {
@@ -175,12 +216,21 @@ func (p *Parser) parseJSONArray() ast.Value {
 				))
 			}
 		case ast.ArrayComma:
-			val := p.parseValue()
-			array.Children = append(array.Children, val)
+			structure := p.parseStructure()
+			if p.currentTokenTypeIs(token.RightBracket) {
+				array.SuffixStructure = structure
+				p.nextToken()
+				array.End = p.currentToken.End
+				return array
+			}
+			arrayItem := p.parseArrayItem()
+			arrayItem.PrefixStructure = append(structure, array.PrefixStructure...)
+			array.Children = append(array.Children, arrayItem)
 			arrayState = ast.ArrayValue
 		}
 	}
 	array.End = p.currentToken.Start
+	array.SuffixStructure = p.parseStructure()
 	return array
 }
 
@@ -193,10 +243,20 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 
 	switch p.currentToken.Type {
 	case token.String:
+		val.ValueType = ast.StringLiteralValueType
+		val.Delimiter = p.currentToken.Prefix
 		val.Value = p.parseString()
 		return val
 	case token.Number:
+		val.ValueType = ast.NumberLiteralValueType
 		ct := p.currentToken.Literal
+		val.OriginalRendering = ct
+		// Attempt to parse as an integer first
+		i, err := strconv.ParseInt(ct, 10, 64)
+		if err == nil {
+			val.Value = i
+			return val
+		}
 		f, err := strconv.ParseFloat(ct, 64)
 		if err != nil {
 			p.parseError("error parsing JSON number, incorrect syntax")
@@ -206,12 +266,15 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 		val.Value = f
 		return val
 	case token.True:
+		val.ValueType = ast.BooleanLiteralValueType
 		val.Value = true
 		return val
 	case token.False:
+		val.ValueType = ast.BooleanLiteralValueType
 		val.Value = false
 		return val
 	default:
+		val.ValueType = ast.NullLiteralValueType
 		val.Value = "null"
 		return val
 	}
@@ -225,10 +288,12 @@ func (p *Parser) parseProperty() ast.Property {
 	for !p.currentTokenTypeIs(token.EOF) {
 		switch propertyState {
 		case ast.PropertyStart:
+			prop.PrefixStructure = p.parseStructure()
 			if p.currentTokenTypeIs(token.String) {
 				key := ast.Identifier{
-					Type:  ast.IdentifierType,
-					Value: p.parseString(),
+					Type:      ast.IdentifierType,
+					Value:     p.parseString(),
+					Delimiter: p.currentToken.Prefix,
 				}
 				prop.Key = key
 				propertyState = ast.PropertyKey
@@ -240,6 +305,8 @@ func (p *Parser) parseProperty() ast.Property {
 				))
 			}
 		case ast.PropertyKey:
+			prop.PostKeyStructure = p.parseStructure()
+
 			if p.currentTokenTypeIs(token.Colon) {
 				propertyState = ast.PropertyColon
 				p.nextToken()
@@ -250,13 +317,31 @@ func (p *Parser) parseProperty() ast.Property {
 				))
 			}
 		case ast.PropertyColon:
+			prop.PreValueStructure = p.parseStructure()
 			val := p.parseValue()
 			prop.Value = val
+			propertyState = ast.PropertyValue
+		case ast.PropertyValue:
+			prop.PostValueStructure = p.parseStructure()
 			return prop
 		}
 	}
 
 	return prop
+}
+
+func (p *Parser) parseStructure() []ast.StructuralItem {
+	result := []ast.StructuralItem{}
+	for {
+		switch p.currentToken.Type {
+		case token.Whitespace, token.BlockComment, token.LineComment:
+			value := p.currentToken.Prefix + p.currentToken.Literal + p.currentToken.Suffix
+			result = append(result, ast.StructuralItem{Value: value})
+			p.nextToken()
+		default:
+			return result
+		}
+	}
 }
 
 // TODO: all the tedius ecaping, etc still needs to be applied here

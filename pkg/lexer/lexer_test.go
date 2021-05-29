@@ -1,10 +1,119 @@
 package lexer
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/bradford-hamilton/dora/pkg/token"
+	"github.com/stretchr/testify/assert"
 )
+
+func TestNextToken_WithSingleLineComments(t *testing.T) {
+	input := `// Initial comment
+{
+	"name" : "Stuart", // test comment
+}
+// ending comment
+`
+
+	tests := []token.Token{
+		{Type: token.LineComment, Literal: " Initial comment\n", Line: 0, Prefix: "//"},
+		{Type: token.LeftBrace, Literal: "{", Line: 1},
+		{Type: token.Whitespace, Literal: "\n\t", Line: 1},
+		{Type: token.String, Literal: "name", Line: 2, Prefix: `"`, Suffix: `"`},
+		{Type: token.Whitespace, Literal: " ", Line: 2},
+		{Type: token.Colon, Literal: ":", Line: 2},
+		{Type: token.Whitespace, Literal: " ", Line: 2},
+		{Type: token.String, Literal: "Stuart", Line: 2, Prefix: `"`, Suffix: `"`},
+		{Type: token.Comma, Literal: ",", Line: 2},
+		{Type: token.Whitespace, Literal: " ", Line: 2},
+		{Type: token.LineComment, Literal: " test comment\n", Line: 2, Prefix: "//"},
+		{Type: token.RightBrace, Literal: "}", Line: 3},
+		{Type: token.Whitespace, Literal: "\n", Line: 3},
+		{Type: token.LineComment, Literal: " ending comment\n", Line: 4, Prefix: "//"},
+		{Type: token.EOF, Literal: "", Line: 5},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
+
+func TestNextToken_WithBlockComment(t *testing.T) {
+	input := `/* Initial comment
+spanning
+multiple lines 
+*/`
+
+	tests := []token.Token{
+		{Type: token.BlockComment, Literal: ` Initial comment
+spanning
+multiple lines 
+`, Line: 0, Prefix: "/*", Suffix: "*/"},
+		{Type: token.EOF, Literal: "", Line: 0},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
+
+func TestNextToken_WithBlockComment2(t *testing.T) {
+	input := `/* Initial comment
+spanning
+multiple lines */`
+
+	tests := []token.Token{
+		{Type: token.BlockComment, Literal: ` Initial comment
+spanning
+multiple lines `, Line: 0, Prefix: "/*", Suffix: "*/"},
+		{Type: token.EOF, Literal: "", Line: 0},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
+
+func TestNextToken_WithBlockCommentAndLineComment(t *testing.T) {
+	input := `/* Initial comment */ //LineComment`
+
+	tests := []token.Token{
+		{Type: token.BlockComment, Literal: ` Initial comment `, Line: 0, Prefix: "/*", Suffix: "*/"},
+		{Type: token.Whitespace, Literal: ` `, Line: 0},
+		{Type: token.LineComment, Literal: `LineComment`, Line: 0, Prefix: "//"},
+		{Type: token.EOF, Literal: "", Line: 0},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
+func TestNextToken_WithSingleLineCommentNoNewLine(t *testing.T) {
+	input := `// Initial comment`
+
+	tests := []token.Token{
+		{Type: token.LineComment, Literal: " Initial comment", Line: 0, Prefix: "//"},
+		{Type: token.EOF, Literal: "", Line: 0},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
+
+func TestNextToken_WithSingleQuoteString(t *testing.T) {
+	input := `'"name"''`
+
+	tests := []token.Token{
+		{Type: token.String, Literal: `"name"`, Line: 0, Prefix: `'`, Suffix: `'`},
+	}
+
+	l := New(input)
+
+	assertLexerMatches(t, l, tests)
+}
 
 func TestNextToken(t *testing.T) {
 	input := `{
@@ -30,102 +139,209 @@ func TestNextToken(t *testing.T) {
 	"escapeString": "I'm some \"string\" thats escaped"
 }`
 
-	tests := [...]struct {
-		expectedType    token.Type
-		expectedLiteral string
-		expectedLine    int
-	}{
-		{token.LeftBrace, "{", 0},
-		{token.String, "items", 1},
-		{token.Colon, ":", 1},
-		{token.LeftBrace, "{", 1},
-		{token.String, "item", 2},
-		{token.Colon, ":", 2},
-		{token.LeftBracket, "[", 2},
-		{token.LeftBrace, "{", 2},
-		{token.String, "id", 3},
-		{token.Colon, ":", 3},
-		{token.String, "0001", 3},
-		{token.Comma, ",", 3},
-		{token.String, "type", 4},
-		{token.Colon, ":", 4},
-		{token.String, "donut", 4},
-		{token.Comma, ",", 4},
-		{token.String, "name", 5},
-		{token.Colon, ":", 5},
-		{token.String, "Cake", 5},
-		{token.Comma, ",", 5},
-		{token.String, "cpu", 6},
-		{token.Colon, ":", 6},
-		{token.Number, "55", 6},
-		{token.Comma, ",", 6},
-		{token.String, "batters", 7},
-		{token.Colon, ":", 7},
-		{token.LeftBrace, "{", 7},
-		{token.String, "batter", 8},
-		{token.Colon, ":", 8},
-		{token.LeftBracket, "[", 8},
-		{token.LeftBrace, "{", 8},
-		{token.String, "id", 9},
-		{token.Colon, ":", 9},
-		{token.False, "false", 9},
-		{token.Comma, ",", 9},
-		{token.String, "name", 10},
-		{token.Colon, ":", 10},
-		{token.Null, "null", 10},
-		{token.Comma, ",", 10},
-		{token.String, "fun", 11},
-		{token.Colon, ":", 11},
-		{token.True, "true", 11},
-		{token.RightBrace, "}", 12},
-		{token.RightBracket, "]", 12},
-		{token.RightBrace, "}", 13},
-		{token.Comma, ",", 13},
-		{token.String, "names", 14},
-		{token.Colon, ":", 14},
-		{token.LeftBracket, "[", 14},
-		{token.String, "catstack", 14},
-		{token.Comma, ",", 14},
-		{token.String, "lampcat", 14},
-		{token.Comma, ",", 14},
-		{token.String, "langlang", 14},
-		{token.RightBracket, "]", 14},
-		{token.RightBrace, "}", 15},
-		{token.RightBracket, "]", 15},
-		{token.RightBrace, "}", 16},
-		{token.Comma, ",", 16},
-		{token.String, "version", 17},
-		{token.Colon, ":", 17},
-		{token.Number, "0.1", 17},
-		{token.Comma, ",", 17},
-		{token.String, "number", 18},
-		{token.Colon, ":", 18},
-		{token.Number, "11.4", 18},
-		{token.Comma, ",", 18},
-		{token.String, "negativeNum", 19},
-		{token.Colon, ":", 19},
-		{token.Number, "-5", 19},
-		{token.Comma, ",", 19},
-		{token.String, "escapeString", 20},
-		{token.Colon, ":", 20},
-		{token.String, "I'm some \\\"string\\\" thats escaped", 20},
-		{token.RightBrace, "}", 21},
-		{token.EOF, "", 21},
+	tests := []token.Token{
+		{Type: token.LeftBrace, Literal: "{", Line: 0},
+		{Type: token.Whitespace, Literal: "\n\t", Line: 0},
+		{Type: token.String, Literal: "items", Line: 1, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 1},
+		{Type: token.Whitespace, Literal: " ", Line: 1},
+		{Type: token.LeftBrace, Literal: "{", Line: 1},
+		{Type: token.Whitespace, Literal: "\n\t\t", Line: 1},
+		{Type: token.String, Literal: "item", Line: 2, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 2},
+		{Type: token.Whitespace, Literal: " ", Line: 2},
+		{Type: token.LeftBracket, Literal: "[", Line: 2},
+		{Type: token.LeftBrace, Literal: "{", Line: 2},
+		{Type: token.Whitespace, Literal: "\n\t\t\t", Line: 2},
+		{Type: token.String, Literal: "id", Line: 3, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 3},
+		{Type: token.Whitespace, Literal: " ", Line: 3},
+		{Type: token.String, Literal: "0001", Line: 3, Prefix: `"`, Suffix: `"`},
+		{Type: token.Comma, Literal: ",", Line: 3},
+		{Type: token.Whitespace, Literal: "\n\t\t\t", Line: 3},
+		{Type: token.String, Literal: "type", Line: 4, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 4},
+		{Type: token.Whitespace, Literal: " ", Line: 4},
+		{Type: token.String, Literal: "donut", Line: 4, Prefix: `"`, Suffix: `"`},
+		{Type: token.Comma, Literal: ",", Line: 4},
+		{Type: token.Whitespace, Literal: "\n\t\t\t", Line: 4},
+		{Type: token.String, Literal: "name", Line: 5, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 5},
+		{Type: token.Whitespace, Literal: " ", Line: 5},
+		{Type: token.String, Literal: "Cake", Line: 5, Prefix: `"`, Suffix: `"`},
+		{Type: token.Comma, Literal: ",", Line: 5},
+		{Type: token.Whitespace, Literal: "\n\t\t\t", Line: 5},
+		{Type: token.String, Literal: "cpu", Line: 6, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 6},
+		{Type: token.Whitespace, Literal: " ", Line: 6},
+		{Type: token.Number, Literal: "55", Line: 6},
+		{Type: token.Comma, Literal: ",", Line: 6},
+		{Type: token.Whitespace, Literal: "\n\t\t\t", Line: 6},
+		{Type: token.String, Literal: "batters", Line: 7, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 7},
+		{Type: token.Whitespace, Literal: " ", Line: 7},
+		{Type: token.LeftBrace, Literal: "{", Line: 7},
+		{Type: token.Whitespace, Literal: "\n\t\t\t\t", Line: 7},
+		{Type: token.String, Literal: "batter", Line: 8, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 8},
+		{Type: token.Whitespace, Literal: " ", Line: 8},
+		{Type: token.LeftBracket, Literal: "[", Line: 8},
+		{Type: token.LeftBrace, Literal: "{", Line: 8},
+		{Type: token.Whitespace, Literal: "\n\t\t\t\t\t", Line: 8},
+		{Type: token.String, Literal: "id", Line: 9, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 9},
+		{Type: token.Whitespace, Literal: " ", Line: 9},
+		{Type: token.False, Literal: "false", Line: 9},
+		{Type: token.Comma, Literal: ",", Line: 9},
+		{Type: token.Whitespace, Literal: "\n\t\t\t\t\t", Line: 9},
+		{Type: token.String, Literal: "name", Line: 10, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 10},
+		{Type: token.Whitespace, Literal: " ", Line: 10},
+		{Type: token.Null, Literal: "null", Line: 10},
+		{Type: token.Comma, Literal: ",", Line: 10},
+		{Type: token.Whitespace, Literal: "\n\t\t\t\t\t", Line: 10},
+		{Type: token.String, Literal: "fun", Line: 11, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 11},
+		{Type: token.Whitespace, Literal: " ", Line: 11},
+		{Type: token.True, Literal: "true", Line: 11},
+		{Type: token.Whitespace, Literal: "\n\t\t\t\t", Line: 11},
+		{Type: token.RightBrace, Literal: "}", Line: 12},
+		{Type: token.RightBracket, Literal: "]", Line: 12},
+		{Type: token.Whitespace, Literal: "\n\t\t\t", Line: 12},
+		{Type: token.RightBrace, Literal: "}", Line: 13},
+		{Type: token.Comma, Literal: ",", Line: 13},
+		{Type: token.Whitespace, Literal: "\n\t\t\t", Line: 13},
+		{Type: token.String, Literal: "names", Line: 14, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 14},
+		{Type: token.Whitespace, Literal: " ", Line: 14},
+		{Type: token.LeftBracket, Literal: "[", Line: 14},
+		{Type: token.String, Literal: "catstack", Line: 14, Prefix: `"`, Suffix: `"`},
+		{Type: token.Comma, Literal: ",", Line: 14},
+		{Type: token.Whitespace, Literal: " ", Line: 14},
+		{Type: token.String, Literal: "lampcat", Line: 14, Prefix: `"`, Suffix: `"`},
+		{Type: token.Comma, Literal: ",", Line: 14},
+		{Type: token.Whitespace, Literal: " ", Line: 14},
+		{Type: token.String, Literal: "langlang", Line: 14, Prefix: `"`, Suffix: `"`},
+		{Type: token.RightBracket, Literal: "]", Line: 14},
+		{Type: token.Whitespace, Literal: "\n\t\t", Line: 14},
+		{Type: token.RightBrace, Literal: "}", Line: 15},
+		{Type: token.RightBracket, Literal: "]", Line: 15},
+		{Type: token.Whitespace, Literal: "\n\t", Line: 15},
+		{Type: token.RightBrace, Literal: "}", Line: 16},
+		{Type: token.Comma, Literal: ",", Line: 16},
+		{Type: token.Whitespace, Literal: "\n\t", Line: 16},
+		{Type: token.String, Literal: "version", Line: 17, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 17},
+		{Type: token.Whitespace, Literal: " ", Line: 17},
+		{Type: token.Number, Literal: "0.1", Line: 17},
+		{Type: token.Comma, Literal: ",", Line: 17},
+		{Type: token.Whitespace, Literal: "\n\t", Line: 17},
+		{Type: token.String, Literal: "number", Line: 18, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 18},
+		{Type: token.Whitespace, Literal: " ", Line: 18},
+		{Type: token.Number, Literal: "11.4", Line: 18},
+		{Type: token.Comma, Literal: ",", Line: 18},
+		{Type: token.Whitespace, Literal: "\n\t", Line: 18},
+		{Type: token.String, Literal: "negativeNum", Line: 19, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 19},
+		{Type: token.Whitespace, Literal: " ", Line: 19},
+		{Type: token.Number, Literal: "-5", Line: 19},
+		{Type: token.Comma, Literal: ",", Line: 19},
+		{Type: token.Whitespace, Literal: "\n\t", Line: 19},
+		{Type: token.String, Literal: "escapeString", Line: 20, Prefix: `"`, Suffix: `"`},
+		{Type: token.Colon, Literal: ":", Line: 20},
+		{Type: token.Whitespace, Literal: " ", Line: 20},
+		{Type: token.String, Literal: "I'm some \\\"string\\\" thats escaped", Line: 20, Prefix: `"`, Suffix: `"`},
+		{Type: token.Whitespace, Literal: "\n", Line: 20},
+		{Type: token.RightBrace, Literal: "}", Line: 21},
+		{Type: token.EOF, Literal: "", Line: 21},
 	}
 
 	l := New(input)
 
-	for i, tt := range tests {
-		token := l.NextToken()
+	assertLexerMatches(t, l, tests)
+}
 
-		if token.Type != tt.expectedType {
-			t.Fatalf("tests[%d] - tokentype wrong. Expected: %q, Got: %q", i, tt.expectedType, token.Type)
+func TestParseAndWrite(t *testing.T) {
+	input := `// Initial comment
+{
+	"items": {
+		"item": [{
+			'id': '0001', // <-- using single quotes here
+			"type": "donut",
+			"name": "Cake",
+			// Add
+			// comments
+			// again
+			"cpu": 55,
+			"batters": {
+				"batter": [{
+					"id": false,
+					"name": null,
+					"fun": true
+				}]
+			},
+			"names": ["catstack", "lampcat", "langlang"]
+		}]
+		/* Add
+		 * a
+		 * block 
+		 * comment
+		*/
+	},
+	"version": 0.1,
+	"number": 11.4,
+	"negativeNum": -5,
+	"escapeString": "I'm some \"string\" thats escaped"
+}`
+	rewritten := lexAndOutputString(input)
+
+	assert.Equal(t, rewritten, input)
+}
+
+func assertLexerMatches(t *testing.T, l *Lexer, tests []token.Token) {
+	for i, expectedToken := range tests {
+		actualToken := l.NextToken()
+
+		if actualToken.Type != expectedToken.Type {
+			t.Fatalf("tests[%d] - tokentype wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
 		}
-		if token.Literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] - literal wrong. Expected: %q, Got: %q", i, tt.expectedLiteral, token.Literal)
+		if actualToken.Literal != expectedToken.Literal {
+			t.Fatalf("tests[%d] - literal wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
 		}
-		if token.Line != tt.expectedLine {
-			t.Fatalf("tests[%d] - line wrong. Expected: %q, Got: %q", i, tt.expectedLine, token.Line)
+		if actualToken.Line != expectedToken.Line {
+			t.Fatalf("tests[%d] - line wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
+		}
+		if actualToken.Prefix != expectedToken.Prefix {
+			t.Fatalf("tests[%d] - prefix wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
+		}
+		if actualToken.Suffix != expectedToken.Suffix {
+			t.Fatalf("tests[%d] - suffix wrong. Expected: %s, Got: %s", i, formatTokenOutputString(expectedToken), formatTokenOutputString(actualToken))
 		}
 	}
+}
+
+func formatTokenOutputString(t token.Token) string {
+	result := fmt.Sprintf("Type:%q; Literal:%q; Line:%d", t.Type, t.Literal, t.Line)
+	if t.Prefix != "" {
+		result += fmt.Sprintf("; Prefix:%q", t.Prefix)
+	}
+	if t.Suffix != "" {
+		result += fmt.Sprintf("; Suffix:%q", t.Suffix)
+	}
+	return result
+}
+
+func lexAndOutputString(input string) string {
+	l := New(input)
+
+	var builder strings.Builder
+
+	for t := l.NextToken(); t.Type != token.EOF; t = l.NextToken() {
+		builder.WriteString(t.Prefix)
+		builder.WriteString(t.Literal)
+		builder.WriteString(t.Suffix)
+	}
+
+	return builder.String()
 }

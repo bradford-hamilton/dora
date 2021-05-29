@@ -3,7 +3,6 @@ package dora
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/bradford-hamilton/dora/pkg/ast"
 	"github.com/bradford-hamilton/dora/pkg/danger"
@@ -77,8 +76,8 @@ func (c *Client) get(query string) (string, error) {
 // find the result the user is looking for.
 func (c *Client) executeQuery() error {
 	rootVal := *c.tree.RootValue
-	obj, _ := rootVal.(ast.Object)
-	arr, ok := rootVal.(ast.Array)
+	obj, _ := rootVal.Content.(ast.Object)
+	arr, ok := rootVal.Content.(ast.Array)
 	currentType := ast.ObjectType
 	if ok {
 		currentType = ast.ArrayType
@@ -101,13 +100,18 @@ func (c *Client) executeQuery() error {
 			for _, v := range obj.Children {
 				if v.Key.Value == c.parsedQuery[i].key {
 					found = true
-					o, astObj := v.Value.(ast.Object)
+					val := v.Value
+					if v2, ok := val.(ast.Value); ok {
+						// unwrap the Value
+						val = v2.Content
+					}
+					o, astObj := val.(ast.Object)
 					if astObj {
 						obj = o
 						currentType = ast.ObjectType
 						break
 					}
-					a, astArr := v.Value.(ast.Array)
+					a, astArr := val.(ast.Array)
 					if astArr {
 						arr = a
 						currentType = ast.ArrayType
@@ -123,7 +127,12 @@ func (c *Client) executeQuery() error {
 				return errors.New("incorrect syntax, your query asked for an array but found object")
 			}
 			qt := c.parsedQuery[i]
-			val := arr.Children[qt.index]
+			val := arr.Children[qt.index].Value
+
+			if v2, ok := val.(ast.ValueContent); ok {
+				// unwrap the Value
+				val = v2
+			}
 
 			switch v := val.(type) {
 			case ast.Object:
@@ -166,7 +175,15 @@ func (c *Client) setFinalValue(currentType ast.Type, index int, obj ast.Object, 
 }
 
 // setResultFromValue switches on an ast.Value type and assigns the appropriate result to the client
-func (c *Client) setResultFromValue(value ast.Value) {
+func (c *Client) setResultFromValue(value ast.ValueContent) {
+	if v2, ok := value.(ast.ArrayItem); ok {
+		// unwrap the ArrayItem
+		value = v2.Value
+	}
+	if v2, ok := value.(ast.Value); ok {
+		// unwrap the Value
+		value = v2.Content
+	}
 	switch val := value.(type) {
 	case ast.Literal:
 		c.setResultFromLiteral(val.Value)
@@ -179,14 +196,14 @@ func (c *Client) setResultFromValue(value ast.Value) {
 
 // setResultFromLiteral is very similar to setResultFromValue, except it we know the value we're switching over
 // must be a Literal, meaning the assigned result will either be a string, number, boolean, or null
-func (c *Client) setResultFromLiteral(value ast.Value) {
+func (c *Client) setResultFromLiteral(value ast.ValueContent) {
 	switch lit := value.(type) {
 	case string:
 		c.result = lit
 	case float64:
 		c.result = fmt.Sprintf("%f", lit)
-	case int:
-		c.result = strconv.Itoa(lit)
+	case int, int64:
+		c.result = fmt.Sprintf("%d", lit)
 	case bool:
 		c.result = fmt.Sprintf("%v", lit)
 	case nil:

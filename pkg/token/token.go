@@ -25,6 +25,13 @@ const (
 	Comma        Type = ","
 	Colon        Type = ":"
 
+	// Structural
+	Whitespace Type = "WHITESPACE"
+
+	// Comments
+	LineComment  Type = "//"
+	BlockComment Type = "/*"
+
 	// Values
 	True  Type = "TRUE"
 	False Type = "FALSE"
@@ -43,6 +50,9 @@ type Token struct {
 	Line    int
 	Start   int
 	End     int
+	Prefix  string
+	Suffix  string
+	Reason  string // optional reason when Illegal Type
 }
 
 var validJSONIdentifiers = map[string]Type{
