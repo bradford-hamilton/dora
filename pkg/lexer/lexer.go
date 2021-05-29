@@ -114,13 +114,13 @@ func (l *Lexer) isWhitespace() bool {
 }
 
 func (l *Lexer) readWhitespace() string {
-	result := ""
+	var result string
 	for l.isWhitespace() {
 		if l.char == '\n' {
 			l.line++
 		}
 		result += string(l.char)
-		l.advanceChar() // advance
+		l.advanceChar()
 	}
 	return result
 }
@@ -134,15 +134,12 @@ func newToken(tokenType token.Type, line, start, end int, char ...byte) token.To
 		End:     end,
 	}
 }
+
+// newTokenWithReason provides a new token with the caller's provided "reason".
 func newTokenWithReason(tokenType token.Type, line, start, end int, reason string, char ...byte) token.Token {
-	return token.Token{
-		Type:    tokenType,
-		Literal: string(char),
-		Line:    line,
-		Start:   start,
-		End:     end,
-		Reason:  reason,
-	}
+	t := newToken(tokenType, line, start, end, char...)
+	t.Reason = reason
+	return t
 }
 
 // readString sets a start position and reads through characters
@@ -207,8 +204,8 @@ func (l *Lexer) readComment() token.Token {
 // When it finds a closing `*/`, it stops consuming characters and
 // returns the string between the start and end positions.
 func (l *Lexer) readBlockComment() token.Token {
-
 	var t token.Token
+
 	t.Start = l.position - 1
 	t.Line = l.line
 	t.Type = token.BlockComment
@@ -216,6 +213,7 @@ func (l *Lexer) readBlockComment() token.Token {
 	l.advanceChar()
 
 	position := l.position
+
 	for {
 		prevChar := l.char
 		l.advanceChar()
@@ -235,6 +233,7 @@ func (l *Lexer) readBlockComment() token.Token {
 	t.End = l.position
 	t.Prefix = "/*"
 	t.Suffix = "*/"
+
 	return t
 }
 

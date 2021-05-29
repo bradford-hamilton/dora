@@ -24,13 +24,13 @@ type Parser struct {
 // New takes a Lexer, creates a Parser with that Lexer, sets the current and
 // peek tokens, and returns the Parser.
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{lexer: l}
+	p := Parser{lexer: l}
 
 	// Read two tokens, so currentToken and peekToken are both set.
 	p.nextToken()
 	p.nextToken()
 
-	return p
+	return &p
 }
 
 // ParseJSON parses tokens and creates an AST. It returns the RootNode
@@ -85,8 +85,8 @@ func (p *Parser) parseValue() ast.Value {
 
 	return value
 }
-func (p *Parser) parseArrayItem() ast.ArrayItem {
 
+func (p *Parser) parseArrayItem() ast.ArrayItem {
 	arrayItem := ast.ArrayItem{
 		Type:            ast.ArrayItemType,
 		PrefixStructure: p.parseStructure(),
@@ -177,7 +177,6 @@ func (p *Parser) parseJSONObject() ast.ValueContent {
 func (p *Parser) parseJSONArray() ast.ValueContent {
 	array := ast.Array{Type: ast.ArrayType}
 	arrayState := ast.ArrayStart
-
 	array.PrefixStructure = p.parseStructure()
 
 	for !p.currentTokenTypeIs(token.EOF) {
@@ -251,7 +250,8 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 		val.ValueType = ast.NumberLiteralValueType
 		ct := p.currentToken.Literal
 		val.OriginalRendering = ct
-		// Attempt to parse as an integer first
+
+		// Attempt to parse as an integer first, then float
 		i, err := strconv.ParseInt(ct, 10, 64)
 		if err == nil {
 			val.Value = i
@@ -264,6 +264,7 @@ func (p *Parser) parseJSONLiteral() ast.Literal {
 			return val
 		}
 		val.Value = f
+
 		return val
 	case token.True:
 		val.ValueType = ast.BooleanLiteralValueType
@@ -331,7 +332,7 @@ func (p *Parser) parseProperty() ast.Property {
 }
 
 func (p *Parser) parseStructure() []ast.StructuralItem {
-	result := []ast.StructuralItem{}
+	var result []ast.StructuralItem
 	for {
 		switch p.currentToken.Type {
 		case token.Whitespace, token.BlockComment, token.LineComment:
