@@ -192,6 +192,35 @@ func TestMergeArrayValuesWithWhitespace(t *testing.T) {
 	testMerge(t, baseInput, newInput, expectedOutput)
 }
 
+func TestMergeArrayValuesWithEmptyBase(t *testing.T) {
+
+	baseInput := `{
+	"prop1" : []
+}`
+	newInput := `{
+	"prop1" : [	4,	5,	6]
+}`
+	expectedOutput := `{
+	"prop1" : [	4,	5,	6]
+}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+func TestMergeArrayValuesWithEmptyMerge(t *testing.T) {
+
+	baseInput := `{
+	"prop1" : [1, 2, 3]
+}`
+	newInput := `{
+	"prop1" : []
+}`
+	expectedOutput := `{
+	"prop1" : [1, 2, 3]
+}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+
 func testMerge(t *testing.T, baseInput string, newInput string, expectedOutput string) {
 
 	l := lexer.New(baseInput)

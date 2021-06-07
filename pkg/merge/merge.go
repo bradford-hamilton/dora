@@ -60,10 +60,14 @@ func mergeValues(baseValue ast.Value, mergeValue ast.Value, currentPath string) 
 		switch mergeContent := mergeValue.Content.(type) {
 		case ast.Array:
 			lastChildIndex := len(resultContent.Children) - 1
-			if !resultContent.Children[lastChildIndex].HasCommaSeparator {
-				resultContent.Children[lastChildIndex].HasCommaSeparator = true
+			if lastChildIndex < 0 {
+				resultContent.Children = mergeContent.Children
+			} else if len(mergeContent.Children) > 0 { // if ==0 then no change is needed as result.Children already contains the base values
+				if !resultContent.Children[lastChildIndex].HasCommaSeparator {
+					resultContent.Children[lastChildIndex].HasCommaSeparator = true
+				}
+				resultContent.Children = append(resultContent.Children, mergeContent.Children...)
 			}
-			resultContent.Children = append(resultContent.Children, mergeContent.Children...)
 			result.Content = resultContent
 			return result, nil
 		default:
