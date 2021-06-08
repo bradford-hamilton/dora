@@ -162,6 +162,42 @@ func TestMergeNestedObjectWithConflict(t *testing.T) {
 
 	testMerge(t, baseInput, newInput, expectedOutput)
 }
+func TestMergeNestedObjectWithEmptyBase(t *testing.T) {
+
+	baseInput := `{
+	"prop" : {}
+}`
+	newInput := `{
+	"prop" : {
+		"prop1" : "Goodbye"
+	}
+}`
+	expectedOutput := `{
+	"prop" : {
+		"prop1" : "Goodbye"
+	}
+}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
+func TestMergeNestedObjectWithEmptyMerge(t *testing.T) {
+
+	baseInput := `{
+	"prop" : {
+		"prop1" : "Hello"
+	}
+}`
+	newInput := `{
+	"prop" : {}
+}`
+	expectedOutput := `{
+	"prop" : {
+		"prop1" : "Hello"
+	}
+}`
+
+	testMerge(t, baseInput, newInput, expectedOutput)
+}
 
 func TestMergeArrayValuesNoWhitespace(t *testing.T) {
 

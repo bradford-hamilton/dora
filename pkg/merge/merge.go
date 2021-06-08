@@ -30,14 +30,16 @@ func mergeValues(baseValue ast.Value, mergeValue ast.Value, currentPath string) 
 				resultChildIndex, resultChild := getChildByKey(resultContent, mergeChild.Key.Value)
 				if resultChild == nil {
 					lastChildIndex := len(resultContent.Children) - 1
-					if resultContent.Children[lastChildIndex].HasCommaSeparator {
-						resultContent.SuffixStructure = append(stripWhiteSpace(resultContent.SuffixStructure), mergeContent.SuffixStructure...)
-					} else {
-						// Add in comma
-						resultContent.Children[lastChildIndex].HasCommaSeparator = true
-						resultContent.Children[lastChildIndex].Value.SuffixStructure = stripWhiteSpace(resultContent.Children[lastChildIndex].Value.SuffixStructure)
-						if mergeChild.HasCommaSeparator {
+					if lastChildIndex >= 0 { // i.e. not an empty object
+						if resultContent.Children[lastChildIndex].HasCommaSeparator {
 							resultContent.SuffixStructure = append(stripWhiteSpace(resultContent.SuffixStructure), mergeContent.SuffixStructure...)
+						} else {
+							// Add in comma
+							resultContent.Children[lastChildIndex].HasCommaSeparator = true
+							resultContent.Children[lastChildIndex].Value.SuffixStructure = stripWhiteSpace(resultContent.Children[lastChildIndex].Value.SuffixStructure)
+							if mergeChild.HasCommaSeparator {
+								resultContent.SuffixStructure = append(stripWhiteSpace(resultContent.SuffixStructure), mergeContent.SuffixStructure...)
+							}
 						}
 					}
 					resultContent.Children = append(resultContent.Children, mergeChild)
