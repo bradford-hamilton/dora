@@ -163,10 +163,11 @@ func (l *Lexer) readString(delimiter byte) string {
 func (l *Lexer) readLine() string {
 	position := l.position
 	for {
-		l.advanceChar()
 		if l.char == 0 {
 			break
 		}
+		l.advanceChar()
+
 		if l.char == '\n' {
 			l.line++
 			l.advanceChar()
