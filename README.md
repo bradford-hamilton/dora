@@ -145,7 +145,7 @@ go test ./...
 
 👤 **Bradford Lamson-Scribner**
 
-* Website: https://www.bradfordhamilton.io
+* Website: bradfordhamilton.io
 * Twitter: [@lamsonscribner](https://twitter.com/lamsonscribner)
 * Github: [@bradford-hamilton](https://github.com/bradford-hamilton)
 
