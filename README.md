@@ -27,7 +27,7 @@
 > Dora makes exploring JSON fast, painless, and elegant.
 
 ### **_NOTE_**:
-- dora is currently a WIP and the main focus was for teaching the content through a [medium blog post](https://medium.com/@bradford_hamilton/building-a-json-parser-and-query-tool-with-go-8790beee239a). In other words, dora is not currently a stable tool.
+- dora's main focus was for teaching the content through a [medium blog post](https://medium.com/@bradford_hamilton/building-a-json-parser-and-query-tool-with-go-8790beee239a). In other words, dora is not currently a stable tool.
 
 ## Install
 
