@@ -41,8 +41,18 @@ type Type int
 // LiteralValueType is a type alias for int. Represents the type of the value in a Literal node
 type LiteralValueType int
 
+// StructuralItemType is a type alias for int. Represents the type of the structural item
+type StructuralItemType int
+
+const (
+	WhitespaceStructuralItemType StructuralItemType = iota
+	LineCommentStructuralItemType
+	BlockCommentStructuralItemType
+)
+
 type StructuralItem struct {
-	Value string
+	ItemType StructuralItemType
+	Value    string
 }
 
 // Object represents a JSON object. It holds a slice of Property as its children,
@@ -87,21 +97,19 @@ type Literal struct {
 // Property holds a Type ("Property") as well as a `Key` and `Value`. The Key is an Identifier
 // and the value is any Value.
 type Property struct {
-	Type               Type
-	PrefixStructure    []StructuralItem
-	Key                Identifier
-	PostKeyStructure   []StructuralItem // NOTE: Colon is between PostKeyStructure and PreValue Structure
-	PreValueStructure  []StructuralItem
-	Value              ValueContent
-	PostValueStructure []StructuralItem
-	HasCommaSeparator  bool
+	Type              Type
+	Key               Identifier
+	Value             Value
+	HasCommaSeparator bool
 }
 
 // Identifier represents a JSON object property key
 type Identifier struct {
-	Type      Type
-	Value     string // "key1"
-	Delimiter string
+	Type            Type
+	PrefixStructure []StructuralItem
+	Value           string // "key1"
+	SuffixStructure []StructuralItem
+	Delimiter       string
 }
 
 type Value struct {
