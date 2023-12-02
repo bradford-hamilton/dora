@@ -1,7 +1,6 @@
 package danger
 
 import (
-	"reflect"
 	"unsafe"
 )
 
@@ -13,10 +12,7 @@ func BytesToString(bytes []byte) (s string) {
 	if len(bytes) == 0 {
 		return s
 	}
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	sh.Data = uintptr(unsafe.Pointer(&bytes[0]))
-	sh.Len = len(bytes)
-	return s
+	return unsafe.String(unsafe.SliceData(bytes), len(bytes))
 }
 
 // StringToBytes turns a string into a []byte with 0 MemAllocs and 0 MemBytes.
@@ -30,8 +26,5 @@ func StringToBytes(s string) (b []byte) {
 	if len(s) > max {
 		panic("string too large")
 	}
-	bytes := (*[max]byte)(
-		unsafe.Pointer((*reflect.StringHeader)(unsafe.Pointer(&s)).Data),
-	)
-	return bytes[:len(s):len(s)]
+	return unsafe.Slice(unsafe.StringData(s), len(s))
 }
