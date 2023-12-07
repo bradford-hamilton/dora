@@ -213,6 +213,7 @@ func (p *Parser) parseJSONArray() ast.ValueContent {
 					"Error parsing property. Expected RightBrace or Comma token, got: %s",
 					p.currentToken.Literal,
 				))
+				p.nextToken()
 			}
 		case ast.ArrayComma:
 			structure := p.parseStructure()
@@ -304,6 +305,7 @@ func (p *Parser) parseProperty() ast.Property {
 					"Error parsing property start. Expected String token, got: %s",
 					p.currentToken.Literal,
 				))
+				p.nextToken()
 			}
 		case ast.PropertyKey:
 			prop.PostKeyStructure = p.parseStructure()
@@ -316,6 +318,7 @@ func (p *Parser) parseProperty() ast.Property {
 					"Error parsing property. Expected Colon token, got: %s",
 					p.currentToken.Literal,
 				))
+				p.nextToken()
 			}
 		case ast.PropertyColon:
 			prop.PreValueStructure = p.parseStructure()
