@@ -8,13 +8,13 @@
 <h1 align="center">Welcome to dora the JSON explorer 👋</h1>
 <p align="center">
   <a href="https://golang.org/dl" target="_blank">
-    <img alt="Using go version 1.14" src="https://img.shields.io/badge/go-1.14-9cf.svg" />
+    <img alt="Using go version 1.23.1" src="https://img.shields.io/badge/go-1.23.1-9cf.svg" />
   </a>
   <a href="https://travis-ci.com/bradford-hamilton/dora" target="_blank">
-    <img alt="Using go version 1.14" src="https://travis-ci.com/bradford-hamilton/dora.svg?branch=master" />
+    <img alt="Using go version 1.23.1" src="https://travis-ci.com/bradford-hamilton/dora.svg?branch=master" />
   </a>
   <a href="https://goreportcard.com/report/github.com/bradford-hamilton/dora" target="_blank">
-    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/bradford-hamilton/dora/pkg" />
+    <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/bradford-hamilton/dora" />
   </a>
   <a href="https://godoc.org/github.com/bradford-hamilton/dora/pkg" target="_blank">
     <img alt="godoc" src="https://godoc.org/github.com/bradford-hamilton/dora/pkg?status.svg" />
@@ -27,7 +27,7 @@
 > Dora makes exploring JSON fast, painless, and elegant.
 
 ### **_NOTE_**:
-- dora's main focus was for teaching the content through a [medium blog post](https://medium.com/@bradford_hamilton/building-a-json-parser-and-query-tool-with-go-8790beee239a). In other words, dora is not currently a stable tool.
+- dora's main focus was for learning and teaching the content through a [medium blog post](https://medium.com/@bradford_hamilton/building-a-json-parser-and-query-tool-with-go-8790beee239a). In other words, dora is not currently a stable tool.
 
 ## Install
 
