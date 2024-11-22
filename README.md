@@ -10,9 +10,6 @@
   <a href="https://golang.org/dl" target="_blank">
     <img alt="Using go version 1.23.1" src="https://img.shields.io/badge/go-1.23.1-9cf.svg" />
   </a>
-  <a href="https://travis-ci.com/bradford-hamilton/dora" target="_blank">
-    <img alt="Using go version 1.23.1" src="https://travis-ci.com/bradford-hamilton/dora.svg?branch=master" />
-  </a>
   <a href="https://goreportcard.com/report/github.com/bradford-hamilton/dora" target="_blank">
     <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/bradford-hamilton/dora" />
   </a>
