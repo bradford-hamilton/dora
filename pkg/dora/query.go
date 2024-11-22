@@ -85,11 +85,6 @@ func (c *Client) executeQuery() error {
 	parsedQueryLen := len(c.parsedQuery)
 
 	for i := 0; i < parsedQueryLen; i++ {
-		// If i == parsedQueryLen-1, we are on the final iteration
-		if i == parsedQueryLen-1 {
-			c.setFinalValue(currentType, i, obj, arr)
-		}
-
 		// If the query token we're on is asking for an object
 		if c.parsedQuery[i].accessType == ObjectAccess {
 			if currentType != ast.ObjectType {
@@ -101,17 +96,20 @@ func (c *Client) executeQuery() error {
 				if v.Key.Value == c.parsedQuery[i].key {
 					found = true
 					val := v.Value
-					if v2, ok := val.(ast.Value); ok {
-						// unwrap the Value
-						val = v2.Content
+
+					// If i == parsedQueryLen-1, we are on the final iteration
+					if i == parsedQueryLen-1 {
+						c.setResultFromValue(val)
+						return nil
 					}
-					o, astObj := val.(ast.Object)
+
+					o, astObj := val.Content.(ast.Object)
 					if astObj {
 						obj = o
 						currentType = ast.ObjectType
 						break
 					}
-					a, astArr := val.(ast.Array)
+					a, astArr := val.Content.(ast.Array)
 					if astArr {
 						arr = a
 						currentType = ast.ArrayType
@@ -120,7 +118,7 @@ func (c *Client) executeQuery() error {
 				}
 			}
 			if !found {
-				return fmt.Errorf("Sorry, could not find a key with that value. Key: %s", c.parsedQuery[i].key)
+				return fmt.Errorf("sorry, could not find a key with that value. Key: %s", c.parsedQuery[i].key)
 			}
 		} else { // If the query token we're on is asking for an array
 			if currentType != ast.ArrayType {
@@ -129,49 +127,31 @@ func (c *Client) executeQuery() error {
 			qt := c.parsedQuery[i]
 			val := arr.Children[qt.index].Value
 
-			if v2, ok := val.(ast.ValueContent); ok {
-				// unwrap the Value
-				val = v2
+			// If i == parsedQueryLen-1, we are on the final iteration
+			if i == parsedQueryLen-1 {
+				c.setResultFromValue(val)
+				return nil
 			}
 
 			switch v := val.(type) {
 			case ast.Object:
 				obj = v
 				currentType = ast.ObjectType
-				break
 			case ast.Array:
 				arr = v
 				currentType = ast.ArrayType
-				break
 			case ast.Literal:
 				// If we're on the final value, return it
 				if i == parsedQueryLen-1 {
 					c.setResultFromLiteral(v.Value)
 				} else {
-					return errors.New("Sorry, it looks like your query isn't quite right")
+					return errors.New("sorry, it looks like your query isn't quite right")
 				}
 			}
 		}
 	}
 
 	return nil
-}
-
-// setFinalValue is called when we are on the final queryToken. It handles narrowing down what
-// needs to be returned and sets the result to the Client
-func (c *Client) setFinalValue(currentType ast.Type, index int, obj ast.Object, arr ast.Array) {
-	if currentType == ast.ObjectType {
-		r := c.parsedQuery[index].key
-		for _, v := range obj.Children {
-			if r == v.Key.Value {
-				c.setResultFromValue(v.Value)
-				break
-			}
-		}
-		return
-	}
-	ind := c.parsedQuery[index].index
-	c.setResultFromValue(arr.Children[ind])
 }
 
 // setResultFromValue switches on an ast.Value type and assigns the appropriate result to the client
@@ -234,7 +214,7 @@ func validateQueryRoot(query string, rootNodeType ast.RootNodeType) error {
 
 func errSelectorSytax(operator string) error {
 	return fmt.Errorf(
-		"Error parsing query, expected either a `.` for selections on an object or a `[` for selections on an array. Got: %s",
+		"error parsing query, expected either a `.` for selections on an object or a `[` for selections on an array. Got: %s",
 		operator,
 	)
 }
